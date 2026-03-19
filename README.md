@@ -1,0 +1,36 @@
+# Aplicativo Pelos & Lambeijos
+
+### Como implementar código novo?
+
+### Pré-requisitos:
+- Ter uma cópia do repositório
+```sh
+git clone https://github.com/Workflow-FatecItaquera/Pets
+```
+
+### Como começar:
+1. Depois de abrir o repositório, mova a branch atual para a branch "develop".
+```sh
+git checkout develop
+```
+2. Crie uma nova branch a partir desta. Nessa branch você trabalhará na feature atual que está fazendo.
+- PADRÃO: NOME/o-que-fez
+```sh
+git checkout -b JOIA/dashboard
+```
+3. Após terminar a implementação dentro de sua branch, verifique antes se não há mudanças posteriores na branch "develop"
+```sh
+git checkout develop
+git pull origin develop
+git checkout SUA/branch
+git merge develop
+```
+4. Faça o commit da sua branch, depois envie-a para o repositório remoto no github.
+```sh
+git add .
+git commit -m "Comentário identificador"
+git push SUA/branch
+```
+5. Quando seu trabalho estiver completamente finalizado e você for trabalhar em outra feature, solicite o pull request da sua branch.
+
+6. Após a avaliação e aprovação da sua branch, o conteúdo dela será incluido na branch "develop" e a branch será excluída.
