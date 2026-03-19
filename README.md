@@ -14,9 +14,10 @@ git clone https://github.com/Workflow-FatecItaquera/Pets
 git checkout develop
 ```
 2. Crie uma nova branch a partir desta. Nessa branch você trabalhará na feature atual que está fazendo.
-- PADRÃO: NOME/o-que-fez
+- PADRÃO: NOME/o-que-fez.
+- Ex: JOIA/dashboard
 ```sh
-git checkout -b JOIA/dashboard
+git checkout -b SUA/branch
 ```
 3. Após terminar a implementação dentro de sua branch, verifique antes se não há mudanças posteriores na branch "develop"
 ```sh
