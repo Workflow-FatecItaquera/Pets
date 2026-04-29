@@ -4,6 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { COLORS, SIZES } from '../styles/theme';
+import Header from '../components/Header';
 import Home from '../screens/Home/index';
 import Agenda from '../screens/Agenda/index';
 import Pets from '../screens/Pets/index';
@@ -11,13 +13,6 @@ import Finance from '../screens/Finance/index';
 import Team from '../screens/Team/index';
 
 const Tab = createBottomTabNavigator();
-
-const COLORS = {
-  primary: '#5C2D91',
-  inactive: '#B39DCD',
-  white: '#FFFFFF',
-  background: '#FFFFFF'
-};
 
 export default function TAB() {
   const insets = useSafeAreaInsets();
@@ -27,7 +22,8 @@ export default function TAB() {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        header: () => <Header />,
         tabBarShowLabel: false,
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 60 + insets.bottom : 70,
@@ -117,13 +113,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 8,
-    borderRadius: 30,
+    borderRadius: SIZES.radiusFull,
   },
   itemContainerFocused: {
     backgroundColor: COLORS.primary,
   },
   label: {
-    fontSize: 10,
+    fontSize: SIZES.fontLabel,
     fontWeight: 'bold',
     marginTop: 4,
   }

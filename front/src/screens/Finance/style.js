@@ -1,15 +1,16 @@
 import { StyleSheet } from "react-native";
+import { COLORS, SIZES } from "../../styles/theme";
 
 export default StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center', 
-        backgroundColor: '#ffffff'
+        backgroundColor: COLORS.background
     },
     title: {
-        fontSize: 20,
+        fontSize: SIZES.fontTitle,
         fontWeight: 'bold',
-        color: '#333'
+        color: COLORS.text
     }
 })
