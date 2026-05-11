@@ -3,7 +3,7 @@ import { StyleSheet, StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import Routes from './src/routes/index'; 
+import Routes from './front/src/routes/index'; 
 
 export default function App() {
   return (

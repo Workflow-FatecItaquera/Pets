@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "react-native",
+    "strict": true
+  },
+  "include": ["back","front"]
+}

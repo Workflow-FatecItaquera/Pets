@@ -9,6 +9,7 @@ front/expo-env.d.ts
 
 # Back-end 
 back/.env
+.env
 
 # Native 
 front/ios/
