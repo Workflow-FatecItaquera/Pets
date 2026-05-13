@@ -16,6 +16,7 @@ class Database {
                 throw error;
             }
         }
+        
         return Database.instance;
     }
 
