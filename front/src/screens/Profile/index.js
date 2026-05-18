@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import style, { colors } from './style';
+import { BACKEND_URI } from '@env';
 
 export default function Profile() {
     const [userData, setUserData] = useState({
