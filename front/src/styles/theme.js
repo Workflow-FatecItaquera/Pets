@@ -13,8 +13,6 @@ export const SIZES = {
   fontTitle: 20,
   fontHeader: 18,
   fontLabel: 10,
-  
-  // Espaçamentos e Bordas
   padding: 20,
   radiusFull: 30, 
   radiusLogo: 20, 

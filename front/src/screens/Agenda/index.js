@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ReservationCard from '../../components/ReservationCard';
-import ReservationModal from '../../components/ReservationModal';
+import ReservationCard from '../../components/ReservaCard';
+import ReservationModal from '../../components/ReservaModal';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 
-// Configuração de idioma para o Calendário
+const API_URL = 'http://192.168.0.100:3000'; 
+
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
   monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
@@ -22,30 +23,29 @@ export default function Agenda() {
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [weekDays, setWeekDays] = useState([]);
-  
-  // Mock de dados simulando retorno do backend (Reservation.find().populate('pet'))
-  const [reservations, setReservations] = useState([
-    {
-      _id: '1',
-      startDate: `${selectedDate}T09:30:00`,
-      title: 'Banho + Tosa',
-      status: 'AGUARDANDO',
-      pet: { name: 'Bento', photo: 'https://via.placeholder.com/50', tutor: { name: 'Maria Eduarda' } },
-      notes: 'Leva e Traz'
-    },
-    {
-      _id: '2',
-      startDate: `${selectedDate}T10:45:00`,
-      title: 'Banho Higiênico',
-      status: 'EM BANHO',
-      pet: { name: 'Mel', photo: 'https://via.placeholder.com/50', tutor: { name: 'João Ricardo' } },
-      notes: 'Plano Mensal'
-    }
-  ]);
+  const [reservations, setReservations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    generateWeekDays(new Date());
+    generateWeekDays(new Date(selectedDate + 'T12:00:00'));
+    fetchReservations();
   }, []);
+
+  const fetchReservations = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/reservations`);
+      if (!response.ok) throw new Error('Falha ao buscar agendamentos');
+      
+      const data = await response.json();
+      setReservations(data);
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível carregar os agendamentos da API.');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateWeekDays = (baseDate) => {
     const days = [];
@@ -61,19 +61,34 @@ export default function Agenda() {
     setWeekDays(days);
   };
 
+  const filteredReservations = useMemo(() => {
+    return reservations.filter(res => {
+      if (!res.startDate) return false;
+      const resDate = new Date(res.startDate).toISOString().split('T')[0];
+      return resDate === selectedDate;
+    }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  }, [reservations, selectedDate]);
+
   const markedDates = useMemo(() => {
-    // Marcando dias com agendamento
-    return {
-      [selectedDate]: { selected: true, selectedColor: COLORS.primary },
-      '2026-05-20': { marked: true, dotColor: COLORS.secondary }, // Exemplo de dia com evento
-    };
-  }, [selectedDate]);
+    const marks = {};
+    reservations.forEach(res => {
+      if(res.startDate){
+        const d = new Date(res.startDate).toISOString().split('T')[0];
+        marks[d] = { marked: true, dotColor: COLORS.secondary };
+      }
+    });
+    marks[selectedDate] = { ...marks[selectedDate], selected: true, selectedColor: COLORS.primary };
+    return marks;
+  }, [reservations, selectedDate]);
+
+  const onReservationSaved = () => {
+    fetchReservations();
+  };
 
   return (
     <View style={style.container}>
       <Text style={style.pageTitle}>Agenda</Text>
 
-      {/* Header do Calendário - Scroll Horizontal */}
       {!showFullCalendar && (
         <View style={style.horizontalCalendarContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={style.scrollContent}>
@@ -91,7 +106,6 @@ export default function Agenda() {
               );
             })}
             
-            {/* Botão de abrir calendário completo */}
             <TouchableOpacity 
               style={style.fullCalendarBtn} 
               onPress={() => setShowFullCalendar(true)}
@@ -102,61 +116,53 @@ export default function Agenda() {
         </View>
       )}
 
-      {/* Calendário Completo da Biblioteca */}
       {showFullCalendar && (
         <View style={style.fullCalendarWrapper}>
           <Calendar
             current={selectedDate}
             onDayPress={(day) => {
               setSelectedDate(day.dateString);
-              generateWeekDays(new Date(day.dateString + 'T00:00:00'));
+              generateWeekDays(new Date(day.dateString + 'T12:00:00'));
               setShowFullCalendar(false);
             }}
             markedDates={markedDates}
             theme={{
               calendarBackground: COLORS.background,
-              textSectionTitleColor: COLORS.inactive,
               selectedDayBackgroundColor: COLORS.primary,
               selectedDayTextColor: COLORS.white,
               todayTextColor: COLORS.secondary,
-              dayTextColor: COLORS.text,
               arrowColor: COLORS.primary,
-              monthTextColor: COLORS.primary,
-              textDayFontWeight: '500',
-              textMonthFontWeight: 'bold',
             }}
           />
-          <TouchableOpacity 
-            style={style.closeCalendarBtn} 
-            onPress={() => setShowFullCalendar(false)}
-          >
+          <TouchableOpacity style={style.closeCalendarBtn} onPress={() => setShowFullCalendar(false)}>
             <Text style={style.closeCalendarText}>Fechar Calendário</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Lista de Agendamentos */}
-      <FlatList
-        data={reservations}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={style.listContainer}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <ReservationCard data={item} />}
-        ListEmptyComponent={
-          <Text style={style.emptyText}>Nenhum agendamento para este dia.</Text>
-        }
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={filteredReservations}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={style.listContainer}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => <ReservationCard data={item} />}
+          ListEmptyComponent={<Text style={style.emptyText}>Nenhum agendamento para este dia.</Text>}
+        />
+      )}
 
-      {/* FAB - Botão Flutuante de Adicionar */}
       <TouchableOpacity style={style.fab} onPress={() => setModalVisible(true)}>
         <MaterialCommunityIcons name="plus" size={30} color={COLORS.white} />
       </TouchableOpacity>
 
-      {/* Modal de Novo Agendamento */}
       <ReservationModal 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
         selectedDate={selectedDate}
+        apiUrl={API_URL}
+        onSaveSuccess={onReservationSaved}
       />
     </View>
   );
