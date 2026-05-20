@@ -11,7 +11,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error("Erro de conexão:", err));
 
 app.listen(3000, () => {
-  console.log("🚀 Servidor rodando em http://localhost:3000");
+  console.log("🚀 Servidor rodando");
 });
 
 // ROTAS DE USUÁRIO
