@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 
@@ -9,10 +8,11 @@ const ReservationController = require("./controllers/ReservationController");
 const TutorController = require("./controllers/TutorController");
 
 const app = express();
-
 app.use(express.json());
 
-// CONEXÃO MONGODB
+app.listen(3000, () => {
+  console.log("🚀 Servidor rodando");
+});
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
@@ -310,20 +310,6 @@ app.get("/", (req, res) => {
         success: true,
         message: "API funcionando"
     });
-});
-
-// START SERVER
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  try {
-    const users = await UserController.findAll();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
 
 app.post("/users", async (req, res) => {
