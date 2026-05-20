@@ -366,7 +366,6 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
         </View>
       </View>
 
-      {/* MODAL DE CADASTRO RÁPIDO ATUALIZADO */}
       <Modal visible={quickModalVisible} animationType="slide" transparent={true}>
         <View style={styles.quickModalOverlay}>
           <View style={styles.quickModalContainer}>

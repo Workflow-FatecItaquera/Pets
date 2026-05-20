@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "npx expo start",
-    "android": "npx expo start --android",
-    "ios": "npx expo start --ios",
-    "web": "npx expo start --web"
+    "start":"npx expo start & node ./back/router.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",

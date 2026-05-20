@@ -35,16 +35,19 @@ class PetController {
         const tutor = new Tutor({
             name: data.tutorName,
             phone: data.phone,
-            address: ""
+            address: data.address || ""
         });
         const savedTutor = await tutor.save();
 
         const pet = new Pet({
             name: data.petName,
             tutor: savedTutor._id,
-            type: data.type,
+            type: data.type || "Cachorro",
             breed: data.breed,
             size: data.size,
+            age: data.age,
+            behavior: data.behavior,
+            aestheticPreferences: data.aestheticPreferences,
             notes: data.notes,
             isActive: true
         });

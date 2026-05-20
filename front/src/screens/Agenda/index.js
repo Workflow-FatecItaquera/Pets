@@ -6,8 +6,9 @@ import ReservationCard from '../../components/ReservaCard';
 import ReservationModal from '../../components/ReservaModal';
 import { COLORS } from '../../styles/theme';
 import style from './style';
+import { BACKEND_URI } from '@env';
 
-const API_URL = 'http://192.168.0.100:3000'; 
+const API_URL = BACKEND_URI;
 
 LocaleConfig.locales['pt-br'] = {
   monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
@@ -145,7 +146,7 @@ export default function Agenda() {
       ) : (
         <FlatList
           data={filteredReservations}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item) => item._id || Math.random().toString()}
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <ReservationCard data={item} />}
