@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start":"concurrently \"npx expo start\" \"nodemon ./back/router.js\""
+    "start": "concurrently \"npx expo start\" \"nodemon ./back/router.js\""
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
@@ -20,6 +20,7 @@
     "express": "^5.2.1",
     "mongodb": "^7.1.0",
     "mongoose": "^9.6.2",
+    "nodemon": "^3.1.14",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
