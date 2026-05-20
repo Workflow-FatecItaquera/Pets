@@ -306,4 +306,55 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  try {
+    const users = await UserController.findAll();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/users", async (req, res) => {
+  try {
+    const user = await UserController.createUser(req.body);
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/users/login", async (req, res) => {
+  try {
+    const user = await UserController.login(req.body);
+    res.json(user);
+  } catch (err) {
+    res.status(401).json({ error: err.message });
+  }
+});
+
+app.put("/users", async (req, res) => {
+  try {
+    const user = await UserController.update(req.body);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put("/users/active", async (req, res) => {
+  try {
+    const user = await UserController.activeToggle(req.body);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put("/users/admin", async (req, res) => {
+  try {
+    const user = await UserController.adminToggle(req.body);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
