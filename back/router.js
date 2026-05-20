@@ -16,6 +16,18 @@ app.listen(3000, () => {
 
 // ROTAS DE USUÁRIO
 
+app.get("/users/:id", async (req, res) => {
+  try {
+    const user = await UserController.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/users", async (req, res) => {
   try {
     const users = await UserController.findAll();
@@ -52,18 +64,18 @@ app.put("/users", async (req, res) => {
   }
 });
 
-app.put("/users/active", async (req, res) => {
+app.put("/users/active/:id", async (req, res) => {
   try {
-    const user = await UserController.activeToggle(req.body);
+    const user = await UserController.activeToggle(req.params.id);
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-app.put("/users/admin", async (req, res) => {
+app.put("/users/admin/:id", async (req, res) => {
   try {
-    const user = await UserController.adminToggle(req.body);
+    const user = await UserController.adminToggle(req.params.id);
     res.json(user);
   } catch (err) {
     res.status(400).json({ error: err.message });
