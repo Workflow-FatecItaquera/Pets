@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "iniciar":"npx expo start & node ./back/router.js"
+    "start":"npx expo start & node ./back/router.js"
   },
   "dependencies": {
     "@expo/metro-runtime": "~55.0.10",
