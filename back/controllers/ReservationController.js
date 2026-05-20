@@ -3,17 +3,31 @@ const Database = require("../models/Database");
 
 class ReservationController {
 
-    static async findAll(){
+    static async findAll() {
         await Database.getConnection();
-        return Reservation.find({ active: true });
+
+        return Reservation.find({
+            active: true
+        })
+        .populate({
+            path: "pet",
+            populate: {
+                path: "tutor"
+            }
+        });
     }
 
-    static async insertOne(data){
+    static async insertOne(data) {
         await Database.getConnection();
-        const reservation = new Reservation(data);
+
+        const reservation = new Reservation({
+            ...data,
+            active: true
+        });
+
         return reservation.save();
     }
-    
+
     static async update(data) {
         try {
             await Database.getConnection();
@@ -29,6 +43,7 @@ class ReservationController {
             }
 
             return reservation;
+
         } catch (err) {
             throw err;
         }
@@ -37,17 +52,25 @@ class ReservationController {
     static async activeToggle(id) {
         try {
             await Database.getConnection();
+
             const currentReservation = await Reservation.findById(id);
+
             if (!currentReservation) {
                 throw new Error("Reserva não encontrada");
             }
+
             const reservation = await Reservation.findByIdAndUpdate(
                 id,
-                { $set: { active: !currentReservation.active } },
+                {
+                    $set: {
+                        active: !currentReservation.active
+                    }
+                },
                 { new: true }
             );
 
             return reservation;
+
         } catch (err) {
             throw err;
         }

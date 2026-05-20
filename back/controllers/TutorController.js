@@ -5,12 +5,20 @@ class TutorController {
 
     static async findAll() {
         await Database.getConnection();
-        return Tutor.find({ isActive: true });
+
+        return Tutor.find({
+            isActive: true
+        });
     }
 
     static async insertOne(data) {
         await Database.getConnection();
-        const tutor = new Tutor(data);
+
+        const tutor = new Tutor({
+            ...data,
+            isActive: true
+        });
+
         return tutor.save();
     }
 
@@ -29,6 +37,7 @@ class TutorController {
             }
 
             return tutor;
+
         } catch (err) {
             throw err;
         }
@@ -37,15 +46,25 @@ class TutorController {
     static async activeToggle(id) {
         try {
             await Database.getConnection();
+
             const currentTutor = await Tutor.findById(id);
-            if (!currentTutor) throw new Error("Tutor não encontrado");
+
+            if (!currentTutor) {
+                throw new Error("Tutor não encontrado");
+            }
 
             const tutor = await Tutor.findByIdAndUpdate(
                 id,
-                { $set: { isActive: !currentTutor.isActive } },
+                {
+                    $set: {
+                        isActive: !currentTutor.isActive
+                    }
+                },
                 { new: true }
             );
+
             return tutor;
+
         } catch (err) {
             throw err;
         }
