@@ -20,7 +20,10 @@ class UserController {
         const user = new User({
             name: data.name,
             email: data.email,
-            password: hashedPassword
+            password: hashedPassword,
+            picture: data.picture,
+            isActive: true,
+            isAdmin: false
         });
         return user.save();
     }
