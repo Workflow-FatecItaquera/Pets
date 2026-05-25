@@ -14,20 +14,27 @@ export default function Pets() {
   const [search, setSearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    fetchPets();
-  }, []);
-
   const fetchPets = async (query = '') => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/pets/search?q=${encodeURIComponent(query)}`);
-      if (!response.ok) throw new Error('Falha ao buscar pets');
+      const urlCompleta = `${API_URL}/pets/search?q=${encodeURIComponent(query)}`;
+      
+      console.log(`[Fetch Pets] Disparando requisição para: "${urlCompleta}"`);
+      const response = await fetch(urlCompleta);
+      console.log(`[Fetch Pets] Resposta recebida. Status HTTP: ${response.status}`);
+
+      if (!response.ok) {
+        const textoDeErro = await response.text();
+        console.error(`[Fetch Pets Erro] O servidor retornou um erro não-200. Conteúdo bruto:\n`, textoDeErro);
+        throw new Error('Falha ao buscar pets');
+      }
+
       const data = await response.json();
-      setPets(data);
+      
+      setPets(Array.isArray(data) ? data : []);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar a lista de pets.');
-      console.error(error);
+      console.error('[Fetch Pets Catch]', error);
     } finally {
       setLoading(false);
     }
@@ -37,6 +44,7 @@ export default function Pets() {
     const delayDebounceFn = setTimeout(() => {
       fetchPets(search);
     }, 500);
+
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 

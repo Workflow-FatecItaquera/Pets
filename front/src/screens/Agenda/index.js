@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -27,26 +27,29 @@ export default function Agenda() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    generateWeekDays(new Date(selectedDate + 'T12:00:00'));
-    fetchReservations();
-  }, []);
-
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/reservations`);
-      if (!response.ok) throw new Error('Falha ao buscar agendamentos');
+      const urlCompleta = `${API_URL}/reservations`;
+      const response = await fetch(urlCompleta);
+      
+      if (!response.ok) {
+        throw new Error(`Erro do servidor: ${response.status}`);
+      }
       
       const data = await response.json();
-      setReservations(data);
+      setReservations(Array.isArray(data) ? data : []);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar os agendamentos da API.');
-      console.error(error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    generateWeekDays(new Date(selectedDate + 'T12:00:00'));
+    fetchReservations();
+  }, []);
 
   const generateWeekDays = (baseDate) => {
     const days = [];
