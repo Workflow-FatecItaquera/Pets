@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { Image, View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../styles/theme';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }) {
   const [isSaving, setIsSaving] = useState(false);
@@ -10,8 +12,23 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
     petName: '', type: 'Cachorro', breed: '', size: 'M',
     tutorName: '', phone: '',
     temperament: 'Dócil',
-    allergies: '', notes: ''
+    allergies: '', notes: '', photo: null
   });
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      setForm({ ...form, photo: base64 });
+    }
+  };
 
   const handleSave = async () => {
     if (!form.petName.trim() || !form.tutorName.trim()) {
@@ -31,7 +48,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
       
       Alert.alert('Sucesso', 'Pet e Tutor cadastrados com sucesso!');
       
-      setForm({ petName: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '' });
+      setForm({ petName: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '', photo: null });
       onSaveSuccess();
       onClose();
     } catch (error) {
@@ -57,9 +74,18 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             
-            <TouchableOpacity style={styles.photoUpload}>
-              <MaterialCommunityIcons name="camera-plus" size={32} color={COLORS.primary} />
-              <Text style={styles.photoText}>Adicionar Foto do Pet</Text>
+            <TouchableOpacity style={styles.photoUpload} onPress={pickImage}>
+              {form.photo ? (
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${form.photo}` }}
+                  style={styles.petPhoto}
+                />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="camera-plus" size={32} color={COLORS.primary} />
+                  <Text style={styles.photoText}>Adicionar Foto do Pet</Text>
+                </>
+              )}
             </TouchableOpacity>
 
             <Text style={styles.label}>TIPO E PORTE</Text>
@@ -142,9 +168,13 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
   title: { fontSize: 20, fontWeight: 'bold', color: COLORS.primary },
   subtitle: { fontSize: 14, color: COLORS.inactive },
-  closeBtn: { padding: 5 },
+  closeBtn: { padding: 5 }, petPhoto: {
+  width: 380,
+  height: 380,
+  borderRadius: 16,
+},
   
-  photoUpload: { backgroundColor: '#F8F9FA', height: 100, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed', marginBottom: 20 },
+  photoUpload: { backgroundColor: '#F8F9FA', height: 400, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: COLORS.border, borderStyle: 'dashed', marginBottom: 20 },
   photoText: { marginTop: 8, color: COLORS.primary, fontWeight: '600' },
 
   label: { fontSize: 12, fontWeight: 'bold', color: COLORS.inactive, marginBottom: 8, marginTop: 10 },

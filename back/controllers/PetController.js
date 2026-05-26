@@ -4,6 +4,11 @@ const Database = require("../models/Database");
 
 class PetController {
 
+    static async findById(id) {
+        await Database.getConnection();
+        return Pet.findById(id).populate("tutor");
+    }
+
     static async findAll() {
         await Database.getConnection();
         return Pet.find({ isActive: true }).populate("tutor");
@@ -49,6 +54,7 @@ class PetController {
             behavior: data.behavior,
             aestheticPreferences: data.aestheticPreferences,
             notes: data.notes,
+            photo: data.photo || null,
             isActive: true
         });
         const savedPet = await pet.save();

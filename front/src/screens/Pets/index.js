@@ -53,7 +53,7 @@ export default function Pets() {
     <TouchableOpacity style={style.cardContainer}>
       {item.photo ? (
         <Image 
-          source={{ uri: item.photo }} 
+          source={{ uri: `${API_URL}/pets/${item._id}/photo` }} 
           style={style.avatar} 
         />
       ) : (
