@@ -5,21 +5,23 @@ import { COLORS, SIZES } from '../styles/theme';
 
 export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }) {
   const [isSaving, setIsSaving] = useState(false);
+  
   const [form, setForm] = useState({
-    name: '', type: 'Cachorro', breed: '', size: 'M',
+    petName: '', type: 'Cachorro', breed: '', size: 'M',
     tutorName: '', phone: '',
     temperament: 'Dócil',
     allergies: '', notes: ''
   });
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.tutorName.trim()) {
+    if (!form.petName.trim() || !form.tutorName.trim()) {
       return Alert.alert('Atenção', 'Nome do Pet e do Tutor são obrigatórios.');
     }
 
     try {
       setIsSaving(true);
-      const response = await fetch(`${apiUrl}/pets/complete-create`, {
+      
+      const response = await fetch(`${apiUrl}/pets/quick-create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -27,8 +29,9 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
 
       if (!response.ok) throw new Error('Falha ao salvar pet');
       
-      Alert.alert('Sucesso', 'Pet cadastrado com sucesso!');
-      setForm({ name: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '' });
+      Alert.alert('Sucesso', 'Pet e Tutor cadastrados com sucesso!');
+      
+      setForm({ petName: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '' });
       onSaveSuccess();
       onClose();
     } catch (error) {
@@ -44,7 +47,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
         <View style={styles.modalContainer}>
           <View style={styles.header}>
             <View>
-              <Text style={styles.title}>Cadastro Completo</Text>
+              <Text style={styles.title}>Cadastro Rápido</Text>
               <Text style={styles.subtitle}>Ficha do Pet e Tutor</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -86,7 +89,8 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
             </View>
 
             <Text style={styles.label}>NOME DO PET</Text>
-            <TextInput style={styles.input} value={form.name} onChangeText={t => setForm({...form, name: t})} />
+
+            <TextInput style={styles.input} value={form.petName} onChangeText={t => setForm({...form, petName: t})} />
 
             <Text style={styles.label}>RAÇA</Text>
             <TextInput style={styles.input} value={form.breed} onChangeText={t => setForm({...form, breed: t})} />
@@ -122,7 +126,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
             <TextInput style={styles.input} keyboardType="phone-pad" value={form.phone} onChangeText={t => setForm({...form, phone: t})} />
 
             <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={isSaving}>
-              {isSaving ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Cadastrar Pet</Text>}
+              {isSaving ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Cadastrar Pet e Tutor</Text>}
             </TouchableOpacity>
 
           </ScrollView>
