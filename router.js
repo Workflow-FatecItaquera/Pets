@@ -1,14 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+import dotenv from "dotenv";
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
 import { GridFSBucket } from "mongodb";
 
-const UserController = require("./controllers/UserController");
-const PetController = require("./controllers/PetController");
-const ReservationController = require("./controllers/ReservationController");
-const TutorController = require("./controllers/TutorController");
-const LogController = require("./controllers/LogController");
+dotenv.config();
+
+import UserController from "./controllers/UserController.js";
+import PetController from "./controllers/PetController.js";
+import ReservationController from "./controllers/ReservationController.js";
+import TutorController from "./controllers/TutorController.js";
+import LogController from "./controllers/LogController.js";
 
 const app = express();
 

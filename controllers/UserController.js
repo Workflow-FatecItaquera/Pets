@@ -1,6 +1,6 @@
-const User = require("../models/User");
-const Database = require("../models/Database");
-const bcrypt = require("bcryptjs");
+import User from "../models/User.js";
+import Database from "../models/Database.js";
+import bcrypt from "bcryptjs";
 
 class UserController {
 
@@ -100,4 +100,4 @@ class UserController {
     }
 }
 
-module.exports = UserController;
+export default UserController;

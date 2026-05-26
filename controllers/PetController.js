@@ -1,6 +1,6 @@
-const Pet = require("../models/Pet");
-const Tutor = require("../models/Tutor");
-const Database = require("../models/Database");
+import Pet from "../models/Pet.js";
+import Tutor from "../models/Tutor.js";
+import Database from "../models/Database.js";
 
 class PetController {
 
@@ -104,4 +104,4 @@ class PetController {
     }
 }
 
-module.exports = PetController;
+export default PetController;

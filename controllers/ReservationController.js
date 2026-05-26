@@ -1,5 +1,5 @@
-const Reservation = require("../models/Reservation");
-const Database = require("../models/Database");
+import Reservation from "../models/Reservation.js";
+import Database from "../models/Database.js";
 
 class ReservationController {
 
@@ -77,4 +77,4 @@ class ReservationController {
     }
 }
 
-module.exports = ReservationController;
+export default ReservationController;

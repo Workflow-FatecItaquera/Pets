@@ -1,5 +1,5 @@
-const Tutor = require("../models/Tutor");
-const Database = require("../models/Database");
+import Tutor from "../models/Tutor.js";
+import Database from "../models/Database.js";
 
 class TutorController {
 
@@ -71,4 +71,4 @@ class TutorController {
     }
 }
 
-module.exports = TutorController;
+export default TutorController;

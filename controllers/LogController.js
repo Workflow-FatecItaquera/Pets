@@ -1,6 +1,6 @@
-const Log = require("../models/Log");
-const User = require("../models/User");
-const Database = require("../models/Database");
+import Log from "../models/Log.js";
+import User from "../models/User.js";
+import Database from "../models/Database.js";
 
 class LogController {
 
@@ -26,4 +26,4 @@ class LogController {
 
 }
 
-module.exports = LogController;
+export default LogController;

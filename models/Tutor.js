@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const TutorSchema = new mongoose.Schema({
   name: String,
@@ -8,4 +8,4 @@ const TutorSchema = new mongoose.Schema({
 });
 
 const Tutor = mongoose.model("Tutor", TutorSchema);
-module.exports = Tutor;
+export default Tutor;
