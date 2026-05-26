@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Image } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import PetFormModal from '../../components/PetFormModal';
 import { COLORS } from '../../styles/theme';
@@ -50,10 +51,17 @@ export default function Pets() {
 
   const renderPetCard = ({ item }) => (
     <TouchableOpacity style={style.cardContainer}>
-      <Image 
-        source={{ uri: item.photo || 'https://via.placeholder.com/60' }} 
-        style={style.avatar} 
-      />
+      {item.photo ? (
+        <Image 
+          source={{ uri: item.photo }} 
+          style={style.avatar} 
+        />
+      ) : (
+        <View style={[style.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0E6FF' }]}>
+          <Feather name="user" size={28} color={COLORS.primary} />
+        </View>
+      )}
+
       <View style={style.cardContent}>
         <View style={style.cardHeader}>
           <Text style={style.petName}>{item.name}</Text>
@@ -68,7 +76,7 @@ export default function Pets() {
           {item.breed && (
             <View style={style.tag}><Text style={style.tagText}>{item.breed}</Text></View>
           )}
-          <View style={style.tag}><Text style={style.tagText}>Porte {item.size}</Text></View>
+          <View style={style.tag}><Text style={style.tagText}>Porte {item.size || 'N/A'}</Text></View>
         </View>
       </View>
       <MaterialCommunityIcons name="chevron-right" size={24} color={COLORS.inactive} />
@@ -95,7 +103,7 @@ export default function Pets() {
       ) : (
         <FlatList
           data={pets}
-          keyExtractor={(item) => item._id || Math.random().toString()}
+          keyExtractor={(item, index) => item._id || index.toString()}
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
           renderItem={renderPetCard}
