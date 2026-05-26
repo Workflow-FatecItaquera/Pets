@@ -1,14 +1,17 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const UserController = require("./controllers/UserController");
 const PetController = require("./controllers/PetController");
 const ReservationController = require("./controllers/ReservationController");
 const TutorController = require("./controllers/TutorController");
+const LogController = require("./controllers/LogController");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 app.listen(3000, () => {
   console.log("🚀 Servidor rodando");
