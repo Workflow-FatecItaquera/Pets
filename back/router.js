@@ -7,6 +7,7 @@ const UserController = require("./controllers/UserController");
 const PetController = require("./controllers/PetController");
 const ReservationController = require("./controllers/ReservationController");
 const TutorController = require("./controllers/TutorController");
+const LogController = require("./controllers/LogController");
 
 const app = express();
 
