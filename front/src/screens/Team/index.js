@@ -19,34 +19,7 @@ const API_URL = BACKEND_URI;
 const SHOW_MOCK_MEMBERS = true;
 
 const MOCK_MEMBERS = [
-  {
-    _id: 'mock-team-1',
-    name: 'Ana Paula Souza',
-    email: 'ana@peloselambeijos.com',
-    isActive: true,
-    isAdmin: false,
-  },
-  {
-    _id: 'mock-team-2',
-    name: 'Bruno Lima',
-    email: 'bruno@peloselambeijos.com',
-    isActive: true,
-    isAdmin: false,
-  },
-  {
-    _id: 'mock-team-3',
-    name: 'Carla Dias',
-    email: 'carla@peloselambeijos.com',
-    isActive: false,
-    isAdmin: false,
-  },
-  {
-    _id: 'mock-team-4',
-    name: 'Diego Costa',
-    email: 'diego@peloselambeijos.com',
-    isActive: true,
-    isAdmin: true,
-  },
+
 ];
 
 const INITIAL_FORM = {

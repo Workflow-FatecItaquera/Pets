@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../styles/theme';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }) {
   const [isSaving, setIsSaving] = useState(false);
@@ -10,8 +12,23 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
     petName: '', type: 'Cachorro', breed: '', size: 'M',
     tutorName: '', phone: '',
     temperament: 'Dócil',
-    allergies: '', notes: ''
+    allergies: '', notes: '', photo: ''
   });
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
+      setForm({ ...form, photo: base64 });
+    }
+  };
 
   const handleSave = async () => {
     if (!form.petName.trim() || !form.tutorName.trim()) {
@@ -57,7 +74,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             
-            <TouchableOpacity style={styles.photoUpload}>
+            <TouchableOpacity style={styles.photoUpload} onPress={pickImage}>
               <MaterialCommunityIcons name="camera-plus" size={32} color={COLORS.primary} />
               <Text style={styles.photoText}>Adicionar Foto do Pet</Text>
             </TouchableOpacity>
