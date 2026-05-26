@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+import { GridFSBucket } from "mongodb";
 
 const UserController = require("./controllers/UserController");
 const PetController = require("./controllers/PetController");
@@ -12,15 +13,18 @@ const LogController = require("./controllers/LogController");
 const app = express();
 
 app.use(cors()); 
-app.use(express.json());
+app.use(express.json({limit:"15mb"}));
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log("Conectado ao MongoDB Atlas");
+        const db = mongoose.connection.db;
+        const bucket = new GridFSBucket(db, { bucketName: "photos" });
     })
     .catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
+
 
 // ROTAS DE USUÁRIO
 
@@ -148,22 +152,57 @@ app.get("/pets/search", async (req, res) => {
     }
 });
 
-app.post("/pets/complete-create", async (req, res) => {
-    try {
-        const pet = await PetController.insertOne(req.body);
-        res.status(201).json(pet);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
+app.get("/pets/:id/photo", async (req, res) => {
+  const pet = await PetController.findById(req.params.id);
+  if (!pet || !pet.photo) return res.status(404).send("Foto não encontrada");
+
+  const downloadStream = bucket.openDownloadStream(pet.photo);
+  res.set("Content-Type", "image/jpeg");
+  downloadStream.pipe(res);
 });
 
 app.post("/pets/quick-create", async (req, res) => {
-    try {
-        const pet = await PetController.quickCreate(req.body);
-        res.status(201).json(pet);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+  try {
+    const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
+
+    let photoId = null;
+
+    if (photo) {
+        let extension = "jpg";
+        let mimeType = "image/jpeg";
+
+        if (photo.startsWith("data:image")) {
+            mimeType = photo.substring(photo.indexOf(":") + 1, photo.indexOf(";"));
+            extension = mimeType.split("/")[1];
+            
+            photo = photo.split(",")[1];
+        }
+
+        const buffer = Buffer.from(photo, "base64");
+
+        const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, {
+            contentType: mimeType,
+        });
+        uploadStream.end(buffer);
+
+        await new Promise((resolve, reject) => {
+            uploadStream.on("finish", (file) => {
+            photoId = file._id;
+            resolve();
+            });
+            uploadStream.on("error", reject);
+        });
     }
+
+    const pet = await PetController.quickCreate({
+        ...req.body,
+      photo: photoId
+    });
+
+    res.status(201).json(pet);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 app.put("/pets", async (req, res) => {
