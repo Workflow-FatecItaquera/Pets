@@ -8,65 +8,6 @@ import { COLORS } from '../../styles/theme';
 import style from './style';
 
 const API_URL = BACKEND_URI;
-const USE_MOCK_RESERVATIONS = true;
-
-const MOCK_RESERVATIONS = [
-  {
-    _id: 'mock-1',
-    title: 'Banho & Tosa',
-    startDate: new Date().toISOString(),
-    price: 120,
-    status: 'CONFIRMADO',
-    pet: {
-      name: 'Max',
-      tutor: { name: 'Mariana Souza' },
-    },
-  },
-  {
-    _id: 'mock-2',
-    title: 'Banho Premium',
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-    price: 85,
-    status: 'AGUARDANDO',
-    pet: {
-      name: 'Thor',
-      tutor: { name: 'Pedro Lima' },
-    },
-  },
-  {
-    _id: 'mock-3',
-    title: 'Tosa Higienica',
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    price: 250,
-    status: 'CONFIRMADO',
-    pet: {
-      name: 'Luna',
-      tutor: { name: 'Bianca Alves' },
-    },
-  },
-  {
-    _id: 'mock-4',
-    title: 'Pacote Recorrente',
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
-    price: 340,
-    status: 'CONFIRMADO',
-    pet: {
-      name: 'Mel',
-      tutor: { name: 'Rafael Costa' },
-    },
-  },
-  {
-    _id: 'mock-5',
-    title: 'Banho Simples',
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 35).toISOString(),
-    price: 70,
-    status: 'CONFIRMADO',
-    pet: {
-      name: 'Bento',
-      tutor: { name: 'Camila Rocha' },
-    },
-  },
-];
 
 function formatCurrency(value = 0) {
   return new Intl.NumberFormat('pt-BR', {
@@ -99,15 +40,18 @@ function formatReservationDate(value) {
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
 
-function getGrowthText(value) {
+function getGrowthText(value, filterType) {
   if (value === null || value === undefined) return 'Sem comparativo anterior';
-
+  const label = filterType === 'weekly' ? 'à semana anterior' : 'ao mês anterior';
   const signal = value >= 0 ? '+' : '';
-  return `${signal}${value.toFixed(0)}% em relacao ao mes anterior`;
+  return `${signal}${value.toFixed(0)}% em relação ${label}`;
 }
 
 function sumReservations(reservations, startDate = null, endDate = null) {
   return reservations.reduce((total, reservation) => {
+    const status = String(reservation.status).toUpperCase();
+    if (status !== 'PAGO') return total;
+
     const date = getReservationDate(reservation);
     const inRange = (!startDate || date >= startDate) && (!endDate || date < endDate);
 
@@ -124,7 +68,7 @@ function calculateGrowth(currentValue, previousValue) {
 
 function SummaryCard({ icon, iconBackground, label, value, valueColor }) {
   return (
-    <View style={style.summaryCard}>
+    <View style={[style.summaryCard, { flex: 1 }]}>
       <View style={[style.summaryIcon, { backgroundColor: iconBackground }]}>
         <Ionicons name={icon} size={23} color={COLORS.text} />
       </View>
@@ -137,7 +81,8 @@ function SummaryCard({ icon, iconBackground, label, value, valueColor }) {
 }
 
 function ReservationTransactionItem({ item }) {
-  const isConfirmed = item.status !== 'AGUARDANDO';
+  const status = String(item.status).toUpperCase();
+  const isEncerrado = status === 'PAGO';
   const petName = item.pet?.name ? `: ${item.pet.name}` : '';
 
   return (
@@ -148,7 +93,7 @@ function ReservationTransactionItem({ item }) {
 
       <View style={style.transactionInfo}>
         <Text numberOfLines={1} style={style.transactionTitle}>
-          {item.title || 'Servico'}{petName}
+          {item.title || 'Serviço'}{petName}
         </Text>
         <Text style={style.transactionTime}>{formatReservationDate(item.startDate)}</Text>
       </View>
@@ -157,13 +102,13 @@ function ReservationTransactionItem({ item }) {
         <Text style={style.transactionValue}>+ {formatCurrency(item.price)}</Text>
         <View style={[
           style.statusPill,
-          isConfirmed ? style.confirmedPill : style.pendingPill,
+          isEncerrado ? style.confirmedPill : style.pendingPill,
         ]}>
           <Text style={[
             style.statusText,
-            isConfirmed ? style.confirmedText : style.pendingText,
+            isEncerrado ? style.confirmedText : style.pendingText,
           ]}>
-            {isConfirmed ? 'Confirmado' : 'Pendente'}
+            {isEncerrado ? 'Pago' : 'Pendente'}
           </Text>
         </View>
       </View>
@@ -176,24 +121,24 @@ export default function Finance() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState('monthly');
 
   const fetchReservations = useCallback(async (showLoader = true) => {
     try {
       if (showLoader) setLoading(true);
 
-      if (USE_MOCK_RESERVATIONS) {
-        setReservations(MOCK_RESERVATIONS);
-        return;
+      console.log(`[Finance] Buscando agendamentos reais em: ${API_URL}/reservations`);
+      const response = await fetch(`${API_URL}/reservations`);
+      
+      if (!response.ok) {
+        throw new Error(`Erro do servidor: Status ${response.status}`);
       }
 
-      const response = await fetch(`${API_URL}/reservations`);
-      if (!response.ok) throw new Error('Falha ao buscar agendamentos');
-
       const data = await response.json();
-      setReservations(data || []);
+      setReservations(Array.isArray(data) ? data : []);
     } catch (error) {
-      Alert.alert('Erro', 'Nao foi possivel carregar os agendamentos da API.');
-      console.error(error);
+      Alert.alert('Erro', 'Não foi possível carregar os dados financeiros da API.');
+      console.error('[Fetch Reservations Error]', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -204,40 +149,59 @@ export default function Finance() {
     fetchReservations();
   }, [fetchReservations]);
 
-  const summary = useMemo(() => {
+  const financialData = useMemo(() => {
     const now = new Date();
+
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const weekStart = new Date(now);
-    weekStart.setHours(0, 0, 0, 0);
-    weekStart.setDate(now.getDate() - now.getDay());
+    const currentWeekStart = new Date(now);
+    currentWeekStart.setHours(0, 0, 0, 0);
+    currentWeekStart.setDate(now.getDate() - now.getDay());
+    const previousWeekStart = new Date(currentWeekStart);
+    previousWeekStart.setDate(currentWeekStart.getDate() - 7);
 
-    const previousWeekStart = new Date(weekStart);
-    previousWeekStart.setDate(weekStart.getDate() - 7);
+    const targetStartDate = filter === 'weekly' ? currentWeekStart : currentMonthStart;
+    const targetEndDate = filter === 'weekly' ? null : nextMonthStart;
 
-    const totalIncome = sumReservations(reservations);
+    const periodIncome = sumReservations(reservations, targetStartDate, targetEndDate);
+
     const currentMonthIncome = sumReservations(reservations, currentMonthStart, nextMonthStart);
     const previousMonthIncome = sumReservations(reservations, previousMonthStart, currentMonthStart);
-    const currentWeekIncome = sumReservations(reservations, weekStart);
-    const previousWeekIncome = sumReservations(reservations, previousWeekStart, weekStart);
+    const currentWeekIncome = sumReservations(reservations, currentWeekStart);
+    const previousWeekIncome = sumReservations(reservations, previousWeekStart, currentWeekStart);
+
+    const growth = filter === 'weekly'
+      ? calculateGrowth(currentWeekIncome, previousWeekIncome)
+      : calculateGrowth(currentMonthIncome, previousMonthIncome);
 
     return {
-      balance: totalIncome,
-      totalIncome,
-      totalExpense: 0,
-      monthlyGrowth: calculateGrowth(currentMonthIncome, previousMonthIncome),
-      weeklyGrowth: calculateGrowth(currentWeekIncome, previousWeekIncome),
+      activeBalance: periodIncome,
+      growth: growth,
+      weeklyGrowth: calculateGrowth(currentWeekIncome, previousWeekIncome)
     };
-  }, [reservations]);
+  }, [reservations, filter]);
 
-  const recentReservations = useMemo(() => {
+  const filteredRecentReservations = useMemo(() => {
+    const now = new Date();
+    let limitDate = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    if (filter === 'weekly') {
+      limitDate = new Date(now);
+      limitDate.setHours(0, 0, 0, 0);
+      limitDate.setDate(now.getDate() - now.getDay());
+    }
+
     return [...reservations]
-      .filter((reservation) => Number(reservation.price) > 0)
-      .sort((a, b) => getReservationDate(b) - getReservationDate(a))
-      .slice(0, 8);
-  }, [reservations]);
+      .filter((res) => {
+        const status = String(res.status).toUpperCase();
+        const isEncerrado = status === 'PAGO';
+        const date = getReservationDate(res);
+        return isEncerrado && Number(res.price) > 0 && date >= limitDate;
+      })
+      .sort((a, b) => getReservationDate(b) - getReservationDate(a));
+  }, [reservations, filter]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -257,20 +221,37 @@ export default function Finance() {
         <ActivityIndicator size="large" color={COLORS.primary} style={style.loader} />
       ) : (
         <>
+          <View style={{ flexDirection: 'row', backgroundColor: '#F0F4F8', borderRadius: 12, padding: 4, marginBottom: 16 }}>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: filter === 'weekly' ? COLORS.white : 'transparent', elevation: filter === 'weekly' ? 1 : 0 }}
+              onPress={() => setFilter('weekly')}
+            >
+              <Text style={{ fontWeight: 'bold', color: filter === 'weekly' ? COLORS.primary : COLORS.inactive }}>Visão Semanal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              style={{ flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 8, backgroundColor: filter === 'monthly' ? COLORS.white : 'transparent', elevation: filter === 'monthly' ? 1 : 0 }}
+              onPress={() => setFilter('monthly')}
+            >
+              <Text style={{ fontWeight: 'bold', color: filter === 'monthly' ? COLORS.primary : COLORS.inactive }}>Visão Mensal</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={style.balanceCard}>
             <View style={style.balanceAccent} />
-            <Text style={style.balanceLabel}>SALDO FATURADO</Text>
+            <Text style={style.balanceLabel}>FATURADO {filter === 'weekly' ? 'ESTA SEMANA' : 'ESTE MÊS'}</Text>
             <Text adjustsFontSizeToFit numberOfLines={1} style={style.balanceValue}>
-              {formatCurrency(summary.balance)}
+              {formatCurrency(financialData.activeBalance)}
             </Text>
             <View style={style.balanceDivider} />
             <View style={style.balanceGrowth}>
               <Ionicons
-                name={(summary.monthlyGrowth || 0) >= 0 ? 'trending-up' : 'trending-down'}
+                name={(financialData.growth || 0) >= 0 ? 'trending-up' : 'trending-down'}
                 size={13}
                 color={COLORS.secondary}
               />
-              <Text style={style.balanceGrowthText}>{getGrowthText(summary.monthlyGrowth)}</Text>
+              <Text style={style.balanceGrowthText}>{getGrowthText(financialData.growth, filter)}</Text>
             </View>
           </View>
 
@@ -281,41 +262,34 @@ export default function Finance() {
 
           <View style={style.summaryRow}>
             <SummaryCard
-              icon="arrow-down"
-              iconBackground="#FFD98F"
-              label="ENTRADAS"
-              value={formatCurrency(summary.totalIncome)}
-              valueColor="#8F6500"
-            />
-            <SummaryCard
-              icon="arrow-up"
+              icon="wallet-outline"
               iconBackground="#E7D1FF"
-              label="SAIDAS"
-              value={formatCurrency(summary.totalExpense)}
+              label="TOTAL RECEBIDO NO PERÍODO"
+              value={formatCurrency(financialData.activeBalance)}
               valueColor={COLORS.primary}
             />
           </View>
 
           <View style={style.sectionHeader}>
-            <Text style={style.sectionTitle}>Extrato Recente</Text>
+            <Text style={style.sectionTitle}>Extrato ({filter === 'weekly' ? 'Semana' : 'Mês'})</Text>
           </View>
 
           <View style={style.statementCard}>
-            {recentReservations.length === 0 ? (
-              <Text style={style.emptyText}>Nenhum agendamento faturado encontrado.</Text>
+            {filteredRecentReservations.length === 0 ? (
+              <Text style={style.emptyText}>Nenhum serviço marcado com o status "pago" neste período. O serviço deve ser pago para aparecer aqui.</Text>
             ) : (
-              recentReservations.map((item) => (
+              filteredRecentReservations.map((item) => (
                 <ReservationTransactionItem key={item._id} item={item} />
               ))
             )}
           </View>
 
           <View style={style.reportCard}>
-            <Text style={style.reportTitle}>Relatorio Semanal</Text>
+            <Text style={style.reportTitle}>Relatório de Desempenho</Text>
             <Text style={style.reportText}>
-              {summary.weeklyGrowth === null || summary.weeklyGrowth === undefined
-                ? 'Ainda nao ha dados suficientes para comparar a semana.'
-                : `Sua receita ${summary.weeklyGrowth >= 0 ? 'cresceu' : 'caiu'} ${Math.abs(summary.weeklyGrowth).toFixed(0)}% esta semana.`}
+              {financialData.weeklyGrowth === null || financialData.weeklyGrowth === undefined
+                ? 'Ainda não há dados suficientes para analisar evolução.'
+                : `Sua receita semanal ${financialData.weeklyGrowth >= 0 ? 'cresceu' : 'caiu'} ${Math.abs(financialData.weeklyGrowth).toFixed(0)}% em relação aos 7 dias anteriores.`}
             </Text>
           </View>
         </>
