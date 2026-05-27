@@ -17,6 +17,8 @@ const app = express();
 app.use(cors()); 
 app.use(express.json({limit:"15mb"}));
 
+let bucket;
+
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
         console.log("Conectado ao MongoDB Atlas");
@@ -31,10 +33,6 @@ mongoose.connect(process.env.MONGODB_URI)
 .catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
-
-let bucket;
-const db = mongoose.connection.db;
-bucket = new GridFSBucket(db, { bucketName: "photos" });
 
 // ROTAS DE USUÁRIO
 
