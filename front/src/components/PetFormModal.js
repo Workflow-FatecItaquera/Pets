@@ -44,7 +44,9 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
         body: JSON.stringify(form)
       });
 
-      if (!response.ok) throw new Error('Falha ao salvar pet');
+      if (!response.ok){ 
+        throw new Error(`Status ${response.status} - ${JSON.stringify(response)}`);
+      }
       
       Alert.alert('Sucesso', 'Pet e Tutor cadastrados com sucesso!');
       
@@ -52,7 +54,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
       onSaveSuccess();
       onClose();
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível realizar o cadastro.');
+      Alert.alert('Erro', 'Não foi possível realizar o cadastro.' + error.message);
     } finally {
       setIsSaving(false);
     }
