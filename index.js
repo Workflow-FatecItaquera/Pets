@@ -203,7 +203,7 @@ app.post("/pets/quick-create", async (req, res) => {
 
     res.status(201).json(pet);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ error: JSON.stringify(req.body) });
   }
 });
 
