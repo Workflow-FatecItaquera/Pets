@@ -20,13 +20,21 @@ app.use(express.json({limit:"15mb"}));
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
         console.log("Conectado ao MongoDB Atlas");
+        
+        mongoose.connection.once("open", () => {
+            const db = mongoose.connection.db;
+            bucket = new GridFSBucket(db, { bucketName: "photos" });
+            console.log("GridFSBucket inicializado");
+        });
+
     })
 .catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
 
+let bucket;
 const db = mongoose.connection.db;
-const bucket = new GridFSBucket(db, { bucketName: "photos" });
+bucket = new GridFSBucket(db, { bucketName: "photos" });
 
 // ROTAS DE USUÁRIO
 
