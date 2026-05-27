@@ -198,7 +198,7 @@ app.post("/pets/quick-create", async (req, res) => {
 
         await new Promise((resolve, reject) => {
             uploadStream.on("finish", (file) => {
-            photoId = file._id;
+            photoId = uploadStream.id;
             resolve();
             });
             uploadStream.on("error", reject);
