@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import { GridFSBucket } from "mongodb";
+import { GridFSBucket, ObjectId } from "mongodb";
 
 dotenv.config();
 
@@ -170,17 +170,27 @@ app.get("/pets/:id/photo", async (req, res) => {
     const pet = await PetController.findById(req.params.id);
     if (!pet || !pet.photo) return res.status(404).send("Foto não encontrada");
 
-    const downloadStream = bucket.openDownloadStream(pet.photo);
+    const photoId = new ObjectId(pet.photo);
+
+    // Buscar metadados do arquivo antes de abrir o stream
+    const files = await bucket.find({ _id: photoId }).toArray();
+    if (!files || files.length === 0) {
+      return res.status(404).send("Arquivo não encontrado no GridFS");
+    }
+
+    const file = files[0];
+    res.set("Content-Type", file.contentType || "application/octet-stream");
+
+    const downloadStream = bucket.openDownloadStream(photoId);
 
     downloadStream.on("error", (err) => {
       console.error("Erro ao baixar imagem:", err);
       res.status(500).send("Erro ao baixar imagem");
     });
 
-    res.set("Content-Type", "image/jpeg");
     downloadStream.pipe(res);
   } catch (err) {
-    console.error(err);
+    console.error("Erro interno:", err);
     res.status(500).send("Erro interno do servidor");
   }
 });
