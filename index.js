@@ -20,19 +20,19 @@ app.use(express.json({limit:"15mb"}));
 let bucket;
 
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => {
-        console.log("Conectado ao MongoDB Atlas");
-        
-        mongoose.connection.once("open", () => {
-            const db = mongoose.connection.db;
-            bucket = new GridFSBucket(db, { bucketName: "photos" });
-            console.log("GridFSBucket inicializado");
-            app.listen(3000, () => {
-                console.log("🚀 Servidor rodando na porta 3000");
-            });
-        });
+  .then(() => {
+    console.log("Conectado ao MongoDB Atlas");
 
-    })
+    
+    const client = mongoose.connection.getClient();
+    const db = client.db("pets"); 
+    bucket = new GridFSBucket(db, { bucketName: "photos" });
+    console.log("GridFSBucket inicializado");
+
+    app.listen(3000, () => {
+      console.log("🚀 Servidor rodando na porta 3000");
+    });
+  })
 .catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
