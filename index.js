@@ -108,7 +108,8 @@ app.put("/users/admin", async (req, res) => {
 
 app.delete("/users/clear", async (req, res) => {
     try {
-        res.status(200).json(UserController.clearAll());
+        const response = UserController.clearAll()
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -154,7 +155,8 @@ app.put("/tutors/active", async (req, res) => {
 
 app.delete("/tutors/clear", async (req, res) => {
     try {
-        res.status(200).json(TutorController.clearAll());
+        const response = TutorController.clearAll();
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -277,7 +279,8 @@ app.put("/pets/active", async (req, res) => {
 
 app.delete("/pets/clear", async (req, res) => {
     try {
-        res.status(200).json(PetController.clearAll());
+        const response = PetController.clearAll();
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({error:error.message});
     }
@@ -324,7 +327,8 @@ app.put("/reservations/active", async (req, res) => {
 
 app.delete("/reservations/clear", async (req, res) => {
     try {
-        res.status(200).json(ReservationController.clearAll());
+        const response = ReservationController.clearAll()
+        res.status(200).json(response);
     } catch (error) {
         res.status(500).json({error:error.message});
     }
