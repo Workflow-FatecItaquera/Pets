@@ -27,6 +27,9 @@ mongoose.connect(process.env.MONGODB_URI)
             const db = mongoose.connection.db;
             bucket = new GridFSBucket(db, { bucketName: "photos" });
             console.log("GridFSBucket inicializado");
+            app.listen(3000, () => {
+                console.log("🚀 Servidor rodando na porta 3000");
+            });
         });
 
     })
@@ -278,8 +281,4 @@ app.get("/", (req, res) => {
         success: true,
         message: "API funcionando"
     });
-});
-
-app.listen(3000, () => {
-  console.log("🚀 Servidor rodando na porta 3000");
 });
