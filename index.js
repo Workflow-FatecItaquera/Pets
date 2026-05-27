@@ -164,12 +164,25 @@ app.get("/pets/search", async (req, res) => {
 });
 
 app.get("/pets/:id/photo", async (req, res) => {
-  const pet = await PetController.findById(req.params.id);
-  if (!pet || !pet.photo) return res.status(404).send("Foto não encontrada");
+  try {
+    if (!bucket) return res.status(500).send("Bucket não inicializado");
 
-  const downloadStream = bucket.openDownloadStream(pet.photo);
-  res.set("Content-Type", "image/jpeg");
-  downloadStream.pipe(res);
+    const pet = await PetController.findById(req.params.id);
+    if (!pet || !pet.photo) return res.status(404).send("Foto não encontrada");
+
+    const downloadStream = bucket.openDownloadStream(pet.photo);
+
+    downloadStream.on("error", (err) => {
+      console.error("Erro ao baixar imagem:", err);
+      res.status(500).send("Erro ao baixar imagem");
+    });
+
+    res.set("Content-Type", "image/jpeg");
+    downloadStream.pipe(res);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erro interno do servidor");
+  }
 });
 
 app.post("/pets/quick-create", async (req, res) => {
