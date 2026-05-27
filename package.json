@@ -18,7 +18,7 @@
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "expo": "^55.0.17",
-    "expo-linear-gradient": "~55.0.14",
+    "expo-linear-gradient": "~15.0.8",
     "expo-status-bar": "~55.0.5",
     "express": "^5.2.1",
     "mongodb": "^7.1.0",

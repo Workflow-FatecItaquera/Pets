@@ -5,15 +5,26 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function Home() {
     return (
         <View style={style.container}>
+
             <LinearGradient
                 colors={['#430F78', '#5B2D90']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={style.boardadmin}
             >
+                {/* Mancha amarela */}
+                <View style={style.yellowGlow} />
+
                 <Text style={style.type}>Painel administrativo</Text>
-                <Text style={style.name}>Olá, |função/nome|</Text>
-                <Text style={style.text}>Bem-vindo ao centro de comando na Pêlos & Lambeijos. Hoje temos |nº de pets a serem atendidos no dia| aguardando carinhos e cuidados. </Text>
+
+                <Text style={style.name}>
+                    Olá, |função/nome|
+                </Text>
+
+                <Text style={style.text}>
+                    Bem-vindo ao centro de comando na Pêlos & Lambeijos.
+                    Hoje temos |nº de pets| aguardando carinhos e cuidados.
+                </Text>
             </LinearGradient>
 
 

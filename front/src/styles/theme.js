@@ -5,7 +5,8 @@ export const COLORS = {
   white: '#FFFFFF',
   background: '#FFFFFF',
   border: '#F0F0F0',  
-  text: '#333333',     
+  text: '#333333',  
+  container: '#F6F3F2',   
 };
 
 export const SIZES = {
