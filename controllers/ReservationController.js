@@ -75,6 +75,15 @@ class ReservationController {
             throw err;
         }
     }
+
+    static async clearAll(){
+        try {
+            Reservation.deleteMany({});
+            return "Limpeza concluída";
+        } catch (error) {
+            return "Houve um erro";
+        }
+    }
 }
 
 export default ReservationController;

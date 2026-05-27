@@ -102,6 +102,15 @@ class PetController {
             throw err;
         }
     }
+
+    static async clearAll(){
+        try {
+            Pet.deleteMany({});
+            return "Limpeza concluída";
+        } catch (error) {
+            return "Houve um erro";
+        }
+    }
 }
 
 export default PetController;

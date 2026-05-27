@@ -11,6 +11,7 @@ import PetController from "./controllers/PetController.js";
 import ReservationController from "./controllers/ReservationController.js";
 import TutorController from "./controllers/TutorController.js";
 import LogController from "./controllers/LogController.js";
+import Tutor from "./models/Tutor.js";
 
 const app = express();
 
@@ -105,6 +106,14 @@ app.put("/users/admin", async (req, res) => {
     }
 });
 
+app.delete("/users/clear", async (req, res) => {
+    try {
+        res.status(200).json(UserController.clearAll());
+    } catch (error) {
+        res.status(500).json({error:error.message});
+    }
+});
+
 // ROTAS DE TUTORES
 
 app.get("/tutors", async (req, res) => {
@@ -140,6 +149,14 @@ app.put("/tutors/active", async (req, res) => {
         res.json(tutor);
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+app.delete("/tutors/clear", async (req, res) => {
+    try {
+        res.status(200).json(TutorController.clearAll());
+    } catch (error) {
+        res.status(500).json({error:error.message});
     }
 });
 
@@ -258,6 +275,14 @@ app.put("/pets/active", async (req, res) => {
     }
 });
 
+app.delete("/pets/clear", async (req, res) => {
+    try {
+        res.status(200).json(PetController.clearAll());
+    } catch (error) {
+        res.status(500).json({error:error.message});
+    }
+});
+
 // ROTAS DE RESERVAS
 
 app.get("/reservations", async (req, res) => {
@@ -294,6 +319,14 @@ app.put("/reservations/active", async (req, res) => {
         res.json(reservation);
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+app.delete("/reservations/clear", async (req, res) => {
+    try {
+        res.status(200).json(ReservationController.clearAll());
+    } catch (error) {
+        res.status(500).json({error:error.message});
     }
 });
 

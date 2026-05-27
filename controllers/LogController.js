@@ -24,6 +24,15 @@ class LogController {
         return await log.save();
     }
 
+    static async clearAll(){
+        try {
+            Log.deleteMany({});
+            return "Limpeza concluída";
+        } catch (error) {
+            return "Houve um erro";
+        }
+    }
+
 }
 
 export default LogController;
