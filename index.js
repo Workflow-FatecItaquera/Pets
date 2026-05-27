@@ -18,15 +18,15 @@ app.use(cors());
 app.use(express.json({limit:"15mb"}));
 
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
+.then(() => {
         console.log("Conectado ao MongoDB Atlas");
-        const db = mongoose.connection.db;
-        const bucket = new GridFSBucket(db, { bucketName: "photos" });
     })
-    .catch((err) => {
+.catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
 
+const db = mongoose.connection.db;
+const bucket = new GridFSBucket(db, { bucketName: "photos" });
 
 // ROTAS DE USUÁRIO
 
