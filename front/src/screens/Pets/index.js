@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Image } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import PetFormModal from '../../components/PetFormModal';
+import { Image } from 'expo-image';
+import PetForm from '../../components/PetForm';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
@@ -55,10 +55,16 @@ export default function Pets() {
         <Image 
           source={{ uri: `${API_URL}/pets/${item._id}/photo` }} 
           style={style.avatar} 
+          transition={150}
+          cachePolicy="disk"
         />
       ) : (
         <View style={[style.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0E6FF' }]}>
-          <Feather name="user" size={28} color={COLORS.primary} />
+          <MaterialCommunityIcons 
+            name={item.type === 'Gato' ? 'cat' : 'dog'} 
+            size={28} 
+            color={COLORS.primary} 
+          />
         </View>
       )}
 
@@ -115,11 +121,12 @@ export default function Pets() {
         <MaterialCommunityIcons name="plus" size={30} color={COLORS.white} />
       </TouchableOpacity>
 
-      <PetFormModal 
+      <PetForm 
         visible={modalVisible} 
         onClose={() => setModalVisible(false)} 
         apiUrl={API_URL}
         onSaveSuccess={() => fetchPets(search)}
+        mode="full"
       />
     </View>
   );

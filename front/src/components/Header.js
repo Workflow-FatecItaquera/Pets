@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, SIZES } from '../styles/theme';
-import NotificationsModal from './NotificationsModal';
+import Notifications from './Notifications';
 
 const INITIAL_NOTIFICATIONS = [
   {
@@ -90,7 +90,7 @@ export default function Header() {
 
       </View>
 
-      <NotificationsModal 
+      <Notifications 
         visible={isNotifVisible} 
         onClose={() => setIsNotifVisible(false)} 
         notifications={notifications}

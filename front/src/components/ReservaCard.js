@@ -1,17 +1,29 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { COLORS } from '../styles/theme';
+import { BACKEND_URI } from '@env';
+
+const API_URL = BACKEND_URI; 
 
 export default function ReservaCard({ data }) {
-  const time = data.startDate 
-    ? new Date(data.startDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) 
+  const time = data.startDate
+    ? new Date(data.startDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     : '--:--';
 
   const petName = data?.pet?.name || data?.petName || 'Pet desconhecido';
   const tutorName = data?.pet?.tutor?.name || data?.tutorName || 'Tutor não informado';
-  const petPhoto = data?.pet?.photo || 'https://via.placeholder.com/50';
   const statusLabel = data.status || 'AGUARDANDO';
+
+  const petId = data?.pet?._id;
+
+  const petPhotoUrl = petId
+    ? `${API_URL}/pets/${petId}/photo`
+    : data?.pet?.photo || null;
+
+  const petType = data?.pet?.type || data?.petType || '';
+  const petIconName = petType.toLowerCase().trim() === 'gato' ? 'cat' : 'dog';
 
   const getStatusTheme = (status) => {
     const normalized = status?.toLowerCase().trim();
@@ -32,17 +44,31 @@ export default function ReservaCard({ data }) {
   return (
     <View style={styles.cardContainer}>
       <View style={[styles.leftIndicator, { backgroundColor: theme.bar }]} />
-      
+
       <View style={styles.content}>
         <View style={styles.header}>
-          <Image source={{ uri: petPhoto }} style={styles.avatar} />
-          
+
+          <View style={styles.avatarContainer}>
+            <MaterialCommunityIcons 
+              name={petIconName} 
+              size={22} 
+              color="#7C3AED"
+            />
+            {petPhotoUrl && (
+              <Image
+                source={{ uri: petPhotoUrl }}
+                style={styles.avatarImage}
+                transition={200}
+                cachePolicy="disk"
+              />
+            )}
+          </View>
+
           <View style={styles.headerText}>
             <Text style={styles.petName}>{petName}</Text>
             <Text style={styles.tutorName}>Tutor: {tutorName}</Text>
           </View>
 
-          {/* Badge dinâmica */}
           <View style={[styles.statusBadge, { backgroundColor: theme.bg }]}>
             <Text style={[styles.statusText, { color: theme.text }]}>
               {statusLabel.toUpperCase()}
@@ -78,7 +104,10 @@ const styles = StyleSheet.create({
   leftIndicator: { width: 6 },
   content: { flex: 1, padding: 15 },
   header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 15 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.border },
+
+  avatarContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3E8FF', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', position: 'relative' },
+  avatarImage: { ...StyleSheet.absoluteFillObject },
+
   headerText: { flex: 1, marginLeft: 10, marginRight: 10 },
   petName: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
   tutorName: { fontSize: 12, color: COLORS.inactive },

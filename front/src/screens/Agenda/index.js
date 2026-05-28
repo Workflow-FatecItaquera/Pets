@@ -4,7 +4,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ReservationCard from '../../components/ReservaCard';
 import ReservationModal from '../../components/ReservaModal';
-import ReservationDetailsModal from '../../components/ReservationDetailsModal';
+import ReservaDetails from '../../components/ReservaDetails';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
@@ -196,7 +196,7 @@ export default function Agenda() {
         onSaveSuccess={onReservationSaved}
       />
 
-      <ReservationDetailsModal
+      <ReservaDetails
         visible={detailsModalVisible}
         onClose={() => {
           setDetailsModalVisible(false);

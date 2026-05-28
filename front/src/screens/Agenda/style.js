@@ -4,8 +4,8 @@ import { COLORS, SIZES } from "../../styles/theme";
 const { height } = Dimensions.get('window');
 
 export default StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 40 },
-  pageTitle: { fontSize: 28, fontWeight: 'bold', color: COLORS.primary, marginHorizontal: SIZES.padding, marginBottom: 20, letterSpacing: -0.5 },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 20 },
+  pageTitle: { fontSize: 24, fontWeight: 'bold', color: COLORS.primary, marginHorizontal: SIZES.padding, marginBottom: 15 },
   horizontalCalendarContainer: { marginBottom: 20 },
   scrollContent: { paddingHorizontal: SIZES.padding, alignItems: 'center' },
   dayCard: { width: 62, height: 82, backgroundColor: COLORS.border || '#F0F2F5', borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginRight: 10, shadowColor: '#000', shadowOpacity: 0.02, shadowRadius: 5, elevation: 1 },
