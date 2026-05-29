@@ -5,6 +5,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Image } from 'expo-image';
 import { COLORS, SIZES } from '../styles/theme';
 import PetForm from '../components/PetForm';
+import PetDropdown from '../components/PetDropdown';
 
 const { height } = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
 
   const [pets, setPets] = useState([]);
   const [isFetchingPets, setIsFetchingPets] = useState(false);
+
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -29,7 +31,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
 
   const [selectedServices, setSelectedServices] = useState([]);
 
-  // Estado do formulário de edição
   const [editForm, setEditForm] = useState({
     pet: null,
     price: '',
@@ -146,12 +147,12 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   const getStatusStyle = (status) => {
     const s = status?.toLowerCase() || '';
     if (s.includes('confirm') || s.includes('concluid') || s.includes('pago')) {
-      return { bg: '#E6F7ED', text: '#2ECC71', icon: 'check-circle', label: 'Concluído' };
+      return { bg: '#EAF7EF', text: '#2E8B57', icon: 'check-circle', label: 'Concluído' };
     }
     if (s.includes('pendent') || s.includes('espera') || s.includes('aguardando')) {
-      return { bg: '#FFF9E6', text: '#F1C40F', icon: 'clock-outline', label: 'Aguardando' };
+      return { bg: '#FFF7E8', text: '#B7791F', icon: 'clock-outline', label: 'Aguardando' };
     }
-    return { bg: '#FDF2F2', text: '#E74C3C', icon: 'alert-circle-outline', label: 'Cancelado' };
+    return { bg: '#FDEEEF', text: '#B85063', icon: 'alert-circle-outline', label: 'Cancelado' };
   };
 
   const statusConfig = getStatusStyle(isEditing ? editForm.status : reservation.status);
@@ -165,6 +166,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO' })
       });
+
       if (!response.ok) throw new Error();
 
       Alert.alert('Sucesso', 'Agendamento concluído com sucesso!');
@@ -203,6 +205,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+
       if (!response.ok) throw new Error();
 
       Alert.alert('Sucesso', 'Alterações salvas com sucesso!');
@@ -291,7 +294,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
               </View>
             ) : (
               <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scrollContent}>
-
+                
                 {!isEditing && (
                   <>
                     <View style={styles.petHeroCard}>
@@ -313,17 +316,19 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       </View>
 
                       <View style={styles.petMeta}>
-                        <Text style={styles.petNameText}>
+                        <Text style={styles.petNameText} numberOfLines={1} ellipsizeMode="tail">
                           {reservation.petName || reservation.pet?.name || 'Não informado'}
                         </Text>
-                        <Text style={styles.tutorNameText}>
+                        <Text style={styles.tutorNameText} numberOfLines={1} ellipsizeMode="tail">
                           Tutor: {reservation.tutorName || reservation.pet?.tutor?.name || 'Não cadastrado'}
                         </Text>
                       </View>
 
                       <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
                         <MaterialCommunityIcons name={statusConfig.icon} size={14} color={statusConfig.text} />
-                        <Text style={[styles.statusText, { color: statusConfig.text }]}>{statusConfig.label}</Text>
+                        <Text style={[styles.statusText, { color: statusConfig.text }]} numberOfLines={1} adjustsFontSizeToFit>
+                          {statusConfig.label}
+                        </Text>
                       </View>
                     </View>
 
@@ -334,7 +339,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                         {displayServices.map((srv, idx) => (
                           <View key={idx} style={styles.viewServiceBadge}>
                             <MaterialCommunityIcons name="bone" size={14} color={COLORS.primary} style={{ marginRight: 6 }} />
-                            <Text style={styles.viewServiceBadgeText}>{srv}</Text>
+                            <Text style={styles.viewServiceBadgeText} numberOfLines={1}>{srv}</Text>
                           </View>
                         ))}
                       </View>
@@ -342,61 +347,60 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       <View style={styles.divider} />
 
                       <View style={styles.viewDateTimeGrid}>
-                        <View style={styles.viewDateTimeRow}>
-                          <View style={styles.viewGridItem}>
-                            <View style={styles.iconCircleInfo}>
-                              <MaterialCommunityIcons name="calendar-month" size={20} color={COLORS.primary} />
-                            </View>
-                            <View style={styles.gridTextContainer}>
-                              <Text style={styles.infoLabel}>DATA</Text>
-                              <Text style={styles.infoValue}>{date}</Text>
-                            </View>
+                        {/* LINHA 1: DATA (Largura inteira) */}
+                        <View style={styles.viewGridItem}>
+                          <View style={styles.iconCircleInfo}>
+                            <MaterialCommunityIcons name="calendar-month" size={20} color={COLORS.primary} />
                           </View>
+                          <View style={styles.gridTextContainer}>
+                            <Text style={styles.infoLabel}>DATA</Text>
+                            <Text style={styles.infoValue} numberOfLines={1} adjustsFontSizeToFit>{date}</Text>
+                          </View>
+                        </View>
 
-                          <View style={styles.viewGridItem}>
+                        {/* LINHA 2: INÍCIO E TÉRMINO (Metade / Metade) */}
+                        <View style={styles.viewDateTimeRow}>
+                          <View style={[styles.viewGridItem, { flex: 1 }]}>
                             <View style={styles.iconCircleInfo}>
                               <MaterialCommunityIcons name="clock-outline" size={20} color={COLORS.primary} />
                             </View>
                             <View style={styles.gridTextContainer}>
                               <Text style={styles.infoLabel}>INÍCIO</Text>
-                              <Text style={styles.infoValue}>{time} h</Text>
+                              <Text style={styles.infoValue} numberOfLines={1} adjustsFontSizeToFit>{time} h</Text>
                             </View>
                           </View>
 
-                          <View style={styles.viewGridItem}>
-                            <View style={styles.iconCircleInfo}>
-                              <MaterialCommunityIcons name="timer-sand" size={20} color={COLORS.primary} />
-                            </View>
-                            <View style={styles.gridTextContainer}>
-                              <Text style={styles.infoLabel}>DURAÇÃO</Text>
-                              <Text style={styles.infoValue}>{viewDuration ? `${viewDuration} min` : 'N/A'}</Text>
-                            </View>
-                          </View>
-
-                          <View style={styles.viewGridItem}>
+                          <View style={[styles.viewGridItem, { flex: 1 }]}>
                             <View style={styles.iconCircleInfo}>
                               <MaterialCommunityIcons name="clock-end" size={20} color={COLORS.primary} />
                             </View>
-
                             <View style={styles.gridTextContainer}>
                               <Text style={styles.infoLabel}>TÉRMINO</Text>
-
-                              <Text style={styles.infoValue}>
-                                {getEstimatedEndTime(
-                                  new Date(reservation.startDate),
-                                  viewDuration
-                                )}
+                              <Text style={styles.infoValue} numberOfLines={1} adjustsFontSizeToFit>
+                                {getEstimatedEndTime(new Date(reservation.startDate), viewDuration)}
                               </Text>
                             </View>
                           </View>
                         </View>
 
-                        <View style={styles.priceHighlightContainer}>
-                          <View>
-                            <Text style={styles.infoLabel}>VALOR TOTAL DO SERVIÇO</Text>
-                            <Text style={styles.priceHighlight}>{formatCurrency(reservation.price)}</Text>
+                        {/* LINHA 3: DURAÇÃO (Largura inteira) */}
+                        <View style={styles.viewGridItem}>
+                          <View style={styles.iconCircleInfo}>
+                            <MaterialCommunityIcons name="timer-sand" size={20} color={COLORS.primary} />
                           </View>
-                          <MaterialCommunityIcons name="cash-multiple" size={32} color="#2ECC71" style={{ opacity: 0.8 }} />
+                          <View style={styles.gridTextContainer}>
+                            <Text style={styles.infoLabel}>DURAÇÃO</Text>
+                            <Text style={styles.infoValue} numberOfLines={1} adjustsFontSizeToFit>{viewDuration ? `${viewDuration} min` : 'N/A'}</Text>
+                          </View>
+                        </View>
+
+                        {/* PREÇO FINAL */}
+                        <View style={styles.priceHighlightContainer}>
+                          <View style={{ flexShrink: 1, marginRight: 10 }}>
+                            <Text style={styles.infoLabel}>VALOR TOTAL DO SERVIÇO</Text>
+                            <Text style={styles.priceHighlight} numberOfLines={1} adjustsFontSizeToFit>{formatCurrency(reservation.price)}</Text>
+                          </View>
+                          <MaterialCommunityIcons name="cash-multiple" size={32} color="#2E8B57" style={{ opacity: 0.8 }} />
                         </View>
                       </View>
                     </View>
@@ -429,104 +433,26 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                   </>
                 )}
 
-                {/* --- MODO DE EDIÇÃO --- */}
                 {isEditing && (
                   <View style={styles.formContainer}>
 
-                    {/* SEÇÃO: VÍNCULO DO PET */}
                     <View style={styles.fieldContainer}>
                       <Text style={styles.sectionLabel}>PET & TUTOR</Text>
-                      <TouchableOpacity
-                        style={[styles.inputDropdownWrapper, showPetDropdown && { borderColor: COLORS.primary }]}
-                        onPress={() => setShowPetDropdown(!showPetDropdown)}
-                      >
-                        {editForm.pet ? (
-                          (editForm.pet.photo || editForm.pet.hasPhoto) ? (
-                            <Image
-                              source={{ uri: `${apiUrl}/pets/${editForm.pet._id}/photo` }}
-                              style={[styles.inputIcon, { width: 24, height: 24, borderRadius: 12 }]}
-                              contentFit="cover"
-                            />
-                          ) : (
-                            <MaterialCommunityIcons
-                              name={editForm.pet.type === 'Gato' ? "cat" : "dog"}
-                              size={20}
-                              color={COLORS.primary}
-                              style={styles.inputIcon}
-                            />
-                          )
-                        ) : (
-                          <MaterialCommunityIcons name="paw" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                        )}
 
-                        <Text style={[styles.dropdownSelectedText, { color: editForm.pet ? COLORS.text : '#94A3B8', fontWeight: editForm.pet ? '600' : 'normal' }]}>
-                          {editForm.pet ? `${editForm.pet.name} (${editForm.pet.tutor?.name || editForm.pet.tutorName || 'Sem tutor'})` : 'Selecionar Pet...'}
-                        </Text>
-                        <MaterialCommunityIcons name={showPetDropdown ? "chevron-up" : "chevron-down"} size={20} color={COLORS.primary} />
-                      </TouchableOpacity>
-
-                      {showPetDropdown && (
-                        <View style={styles.dropdownContainer}>
-                          <View style={styles.searchBarContainer}>
-                            <MaterialCommunityIcons name="magnify" size={20} color="#94A3B8" style={{ marginRight: 8 }} />
-                            <TextInput
-                              style={styles.searchTextInput}
-                              placeholder="Buscar por nome do Pet ou Tutor..."
-                              value={searchText}
-                              onChangeText={setSearchText}
-                              autoCorrect={false}
-                            />
-                            {isFetchingPets && <ActivityIndicator size="small" color={COLORS.primary} />}
-                          </View>
-
-                          <TouchableOpacity style={styles.quickAddBtn} onPress={() => setQuickModalVisible(true)}>
-                            <MaterialCommunityIcons name="plus" size={18} color={COLORS.primary} />
-                            <Text style={styles.quickAddBtnText}>Adicionar Novo Pet</Text>
-                          </TouchableOpacity>
-
-                          <ScrollView nestedScrollEnabled style={{ maxHeight: 220 }} keyboardShouldPersistTaps="handled">
-                            {pets.length === 0 && !isFetchingPets ? (
-                              <Text style={styles.emptyResultsText}>Nenhum pet encontrado</Text>
-                            ) : (
-                              pets.map(item => {
-                                const isSelected = editForm.pet?._id === item._id;
-                                return (
-                                  <TouchableOpacity
-                                    key={item._id}
-                                    style={[styles.dropdownItem, isSelected && styles.dropdownItemActive]}
-                                    onPress={() => {
-                                      setEditForm({ ...editForm, pet: item });
-                                      setShowPetDropdown(false);
-                                    }}
-                                  >
-                                    <View style={styles.petAvatarCircle}>
-                                      {(item.photo || item.hasPhoto) ? (
-                                        <Image
-                                          source={{ uri: `${apiUrl}/pets/${item._id}/photo` }}
-                                          style={{ width: '100%', height: '100%' }}
-                                          contentFit="cover"
-                                        />
-                                      ) : (
-                                        <MaterialCommunityIcons name={item.type === 'Gato' ? "cat" : "dog"} size={16} color={COLORS.primary} />
-                                      )}
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                      <Text style={styles.itemPetName}>
-                                        {item.name} {item.breed ? `• ${item.breed}` : ''}
-                                      </Text>
-                                      <Text style={styles.itemTutorName}>{item.tutor?.name || 'Tutor não especificado'}</Text>
-                                    </View>
-                                    {isSelected && <MaterialCommunityIcons name="check-circle" size={18} color={COLORS.primary} />}
-                                  </TouchableOpacity>
-                                );
-                              })
-                            )}
-                          </ScrollView>
-                        </View>
-                      )}
+                      <PetDropdown
+                        form={editForm}
+                        setForm={setEditForm}
+                        showPetDropdown={showPetDropdown}
+                        setShowPetDropdown={setShowPetDropdown}
+                        searchText={searchText}
+                        setSearchText={setSearchText}
+                        isFetchingPets={isFetchingPets}
+                        setQuickModalVisible={setQuickModalVisible}
+                        pets={pets}
+                        apiUrl={apiUrl}
+                      />
                     </View>
 
-                    {/* SEÇÃO: SERVIÇOS (CHECKLIST COM CÁLCULO DE TEMPO E PREÇO) */}
                     <View style={styles.fieldContainer}>
                       <Text style={styles.sectionLabel}>SERVIÇOS (CHECKLIST)</Text>
                       {SERVICE_CATALOG.map(serv => {
@@ -534,7 +460,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                         return (
                           <TouchableOpacity
                             key={serv.id}
-                            style={[styles.serviceCheck, isChecked && { borderColor: COLORS.primary, backgroundColor: '#F0F9FF' }]}
+                            style={[styles.serviceCheck, isChecked && { borderColor: COLORS.primary, backgroundColor: '#faf7fc' }]}
                             onPress={() => toggleService(serv.id)}
                             activeOpacity={0.7}
                           >
@@ -543,10 +469,10 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                               size={24}
                               color={isChecked ? COLORS.primary : COLORS.inactive || '#9CA3AF'}
                             />
-                            <Text style={[styles.serviceText, isChecked && styles.textBold]}>{serv.name}</Text>
+                            <Text style={[styles.serviceText, isChecked && styles.textBold]} numberOfLines={1} ellipsizeMode="tail">{serv.name}</Text>
                             <View style={styles.serviceMetaRight}>
-                              <Text style={styles.durationBadgeText}>+{serv.duration} min</Text>
-                              <Text style={styles.priceBadgeText}>R$ {serv.price.toFixed(2)}</Text>
+                               <Text style={styles.durationBadgeText} numberOfLines={1}>+{serv.duration} min</Text>
+                              <Text style={styles.priceBadgeText} numberOfLines={1}>R$ {serv.price.toFixed(2)}</Text>
                               <MaterialCommunityIcons name={serv.icon} size={18} color={COLORS.secondary || '#94A3B8'} style={{ marginLeft: 6 }} />
                             </View>
                           </TouchableOpacity>
@@ -554,13 +480,12 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       })}
                     </View>
 
-                    {/* SEÇÃO: CRONOGRAMA (DATA & HORA) */}
                     <View style={[styles.row, styles.fieldContainer]}>
                       <View style={styles.flexHalf}>
                         <Text style={styles.sectionLabel}>DATA</Text>
                         <TouchableOpacity style={styles.inputDateTimeButton} onPress={() => setShowDatePicker(true)}>
                           <MaterialCommunityIcons name="calendar" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                          <Text style={styles.dateTimeText}>{editForm.date.toLocaleDateString('pt-BR')}</Text>
+                          <Text style={styles.dateTimeText} numberOfLines={1} adjustsFontSizeToFit>{editForm.date.toLocaleDateString('pt-BR')}</Text>
                         </TouchableOpacity>
                       </View>
 
@@ -568,23 +493,24 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                         <Text style={styles.sectionLabel}>HORÁRIO DE INÍCIO</Text>
                         <TouchableOpacity style={styles.inputDateTimeButton} onPress={() => setShowTimePicker(true)}>
                           <MaterialCommunityIcons name="clock-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                          <Text style={styles.dateTimeText}>
+                          <Text style={styles.dateTimeText} numberOfLines={1} adjustsFontSizeToFit>
                             {editForm.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </Text>
                         </TouchableOpacity>
                       </View>
                     </View>
 
-                    {/* Feedback Dinâmico de Tempo */}
                     <View style={styles.timeCalcFeedback}>
-                      <MaterialCommunityIcons name="information-outline" size={18} color={COLORS.primary} />
-                      <Text style={styles.timeCalcText}>
-                        Duração Total: <Text style={{ fontWeight: 'bold' }}>{editForm.duration} min</Text>
-                      </Text>
-                      <Text style={styles.timeCalcTextDivider}>•</Text>
-                      <Text style={styles.timeCalcText}>
-                        Término Estimado: <Text style={{ fontWeight: 'bold' }}>{getEstimatedEndTime(editForm.date, editForm.duration)}</Text>
-                      </Text>
+                      <MaterialCommunityIcons name="information-outline" size={18} color={"#D97706"} style={{ flexShrink: 0 }} />
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', flex: 1, marginLeft: 8, alignItems: 'center' }}>
+                        <Text style={styles.timeCalcText}>
+                          Duração: <Text style={{ fontWeight: 'bold' }}>{editForm.duration} min</Text>
+                        </Text>
+                        <Text style={styles.timeCalcTextDivider}>•</Text>
+                        <Text style={styles.timeCalcText}>
+                          Fim: <Text style={{ fontWeight: 'bold' }}>{getEstimatedEndTime(editForm.date, editForm.duration)}</Text>
+                        </Text>
+                      </View>
                     </View>
 
                     {showDatePicker && (
@@ -606,9 +532,8 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       />
                     )}
 
-                    {/* SEÇÃO: PREÇO / VALOR E STATUS */}
                     <View style={[styles.row, styles.fieldContainer]}>
-                      <View style={[styles.flexHalf, { flex: 0.8 }]}>
+                      <View style={[styles.flexHalf, { flex: 1 }]}>
                         <Text style={styles.sectionLabel}>VALOR TOTAL (R$)</Text>
                         <View style={styles.priceInputWrapper}>
                           <Text style={styles.currencySymbol}>R$</Text>
@@ -624,19 +549,23 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                     </View>
 
                     <View style={styles.fieldContainer}>
-                      <Text style={styles.sectionLabel}>STATUS DO AGENDAMENTO</Text>
+                       <Text style={styles.sectionLabel}>STATUS DO AGENDAMENTO</Text>
                       <View style={styles.toggleRow}>
                         {['AGUARDANDO', 'CONCLUIDO', 'CANCELADO'].map((st) => {
                           const isActive = editForm.status === st;
-                          let activeBg = st === 'CONCLUIDO' ? '#2ECC71' : st === 'CANCELADO' ? '#E74C3C' : '#F1C40F';
+                          let activeBg = st === 'CONCLUIDO' ? '#2E8B57' : st === 'CANCELADO' ? '#B85063' : '#D69E2E';
                           return (
                             <TouchableOpacity
                               key={st}
                               style={[styles.toggleBtn, isActive && { backgroundColor: activeBg }]}
                               onPress={() => setEditForm({ ...editForm, status: st })}
                             >
-                              <Text style={[styles.toggleText, { color: isActive ? '#FFF' : '#9CA3AF' }]}>
-                                {st.charAt(0) + st.slice(1).toLowerCase()}
+                              <Text 
+                                style={[styles.toggleText, { color: isActive ? '#FFF' : '#9CA3AF' }]}
+                                numberOfLines={1}
+                                adjustsFontSizeToFit
+                              >
+                                {st === 'CONCLUIDO' ? 'Concluído' : st.charAt(0) + st.slice(1).toLowerCase()}
                               </Text>
                             </TouchableOpacity>
                           );
@@ -644,7 +573,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       </View>
                     </View>
 
-                    {/* SEÇÃO: OBSERVAÇÕES */}
                     <View style={styles.fieldContainer}>
                       <Text style={styles.sectionLabel}>OBSERVAÇÕES (OPCIONAL)</Text>
                       <TextInput
@@ -655,15 +583,14 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                         maxLength={300}
                         placeholder="Informações, restrições ou detalhes do serviço..."
                       />
-                    </View>
+                     </View>
 
-                    {/* BOTÕES DE SALVAMENTO */}
                     <View style={[styles.rowButtons, { marginTop: 10 }]}>
                       <TouchableOpacity style={styles.btnCancelEdit} onPress={() => setIsEditing(false)}>
-                        <Text style={styles.btnCancelEditText}>Cancelar</Text>
+                        <Text style={styles.btnCancelEditText} numberOfLines={1}>Cancelar</Text>
                       </TouchableOpacity>
                       <TouchableOpacity style={styles.btnSaveEdit} onPress={handleSaveChanges}>
-                        <Text style={styles.btnSaveEditText}>Salvar Alterações</Text>
+                        <Text style={styles.btnSaveEditText} numberOfLines={1}>Salvar Alterações</Text>
                       </TouchableOpacity>
                     </View>
 
@@ -687,7 +614,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
 }
 
 const styles = StyleSheet.create({
-  // ESTRUTURA GERAL
   overlay: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(26, 36, 43, 0.45)' },
   sheetContainer: {
@@ -705,24 +631,20 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between' },
   flexHalf: { flex: 1 },
 
-  // LABELS DO FORMULÁRIO
   fieldContainer: { marginBottom: 24 },
   sectionLabel: { fontSize: 12, fontWeight: 'bold', color: '#888', marginBottom: 8, textTransform: 'uppercase' },
 
-  // INPUTS DE TEXTO E SELETORES
   input: { backgroundColor: '#F4F5F7', borderRadius: 12, padding: 14, fontSize: 16, color: COLORS.text, borderWidth: 1, borderColor: '#E5E7EB' },
-  inputDropdownWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F5F7', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 14, height: 52 },
   inputDateTimeButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F5F7', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 14, height: 52 },
+  
   inputIcon: { marginRight: 10 },
-  dropdownSelectedText: { flex: 1, fontSize: 15 },
-  dateTimeText: { fontSize: 15, color: COLORS.text || '#1E293B' },
+  dateTimeText: { fontSize: 15, color: COLORS.text || '#1E293B', flexShrink: 1 },
   textArea: { height: 80, textAlignVertical: 'top' },
 
   priceInputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F5F7', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', paddingHorizontal: 14, height: 52 },
   currencySymbol: { fontSize: 16, color: '#94A3B8', fontWeight: '700', marginRight: 8 },
   priceInput: { flex: 1, fontSize: 16, color: COLORS.text, fontWeight: '600' },
 
-  // CHECKLIST DE SERVIÇOS (NOVO)
   serviceCheck: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -736,78 +658,59 @@ const styles = StyleSheet.create({
   },
   serviceText: { flex: 1, marginLeft: 10, fontSize: 15, color: COLORS.text || '#1E293B' },
   textBold: { fontWeight: 'bold', color: COLORS.primary },
-  serviceMetaRight: { flexDirection: 'row', alignItems: 'center' },
-  durationBadgeText: { marginRight: 8, color: '#64748B', fontSize: 12, fontWeight: '600' },
+  serviceMetaRight: { flexDirection: 'row', alignItems: 'center', flexShrink: 0 },
+  durationBadgeText: { marginRight: 8, color: '#D97706', fontSize: 12, fontWeight: '600' },
   priceBadgeText: { color: COLORS.text || '#1E293B', fontWeight: '700', fontSize: 14 },
 
-  // CÁLCULO DE TEMPO ESTIMADO (EDIÇÃO)
-  timeCalcFeedback: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#DBEAFE', marginBottom: 24, marginTop: -12 },
-  timeCalcText: { fontSize: 13, color: '#1E3A8A', marginLeft: 8 },
-  timeCalcTextDivider: { marginHorizontal: 6, color: '#93C5FD' },
+  timeCalcFeedback: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF4E5', padding: 12, borderRadius: 12, marginBottom: 24, marginTop: -12 },
+  timeCalcText: { fontSize: 13, color: '#D97706' },
+  timeCalcTextDivider: { marginHorizontal: 6, color: '#D97706' },
 
-  // SELETOR SIMPLIFICADO / TOGGLE
   toggleRow: { flexDirection: 'row', backgroundColor: '#F4F5F7', borderRadius: 12, padding: 4 },
-  toggleBtn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  toggleBtn: { flex: 1, paddingVertical: 12, paddingHorizontal: 4, borderRadius: 8, alignItems: 'center' },
   toggleText: { fontWeight: 'bold', fontSize: 13 },
 
-  // CARD DE HERO / INFORMAÇÕES DO PET (VISUALIZAÇÃO)
   petHeroCard: { backgroundColor: COLORS.primary, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 24, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
-  avatarContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' },
+  avatarContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', flexShrink: 0 },
   petImage: { width: '100%', height: '100%', resizeMode: 'cover' },
-  petMeta: { flex: 1, marginLeft: 16 },
+  petMeta: { flex: 1, marginLeft: 16, marginRight: 8 },
   petNameText: { fontSize: 20, fontWeight: '700', color: '#FFF' },
   tutorNameText: { fontSize: 13, color: '#E2E8F0', marginTop: 2 },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 30 },
-  statusText: { fontSize: 12, fontWeight: '700', marginLeft: 4 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 30, maxWidth: 110, flexShrink: 1 },
+  statusText: { fontSize: 12, fontWeight: '700', marginLeft: 4, flexShrink: 1 },
 
-  // LAYOUT DE GRID E DETALHES DA RESERVA (RESPONSIVIDADE AJUSTADA)
   infoCard: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#E2E8F0' },
 
   viewServicesContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  viewServiceBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F9FF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#BAE6FD' },
-  viewServiceBadgeText: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
+  viewServiceBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#faf7fc', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#ebdaff' },
+  viewServiceBadgeText: { fontSize: 14, fontWeight: '700', color: COLORS.primary, flexShrink: 1 },
 
   divider: { height: 1, backgroundColor: '#F1F5F9', marginBottom: 16 },
 
-  // GRID RESPONSIVO DA DATA E HORA
-  viewDateTimeGrid: { flexDirection: 'column', gap: 16 },
-  viewDateTimeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 }, // FlexWrap permite quebrar a linha se a tela for pequena
-  viewGridItem: { flex: 1, minWidth: 100, flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9' },
-  iconCircleInfo: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#E0F2FE', justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  gridTextContainer: { flex: 1 },
+viewDateTimeGrid: { flexDirection: 'column', gap: 12 },
+  viewDateTimeRow: { flexDirection: 'row', gap: 12 },
+  viewGridItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+ 
+  iconCircleInfo: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', marginRight: 10,  borderWidth: 1, borderColor: '#F1F5F9' },
+  gridTextContainer: { flex: 1, flexShrink: 1 },
   infoLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', marginBottom: 2 },
   infoValue: { fontSize: 14, fontWeight: '700', color: COLORS.text || '#1E293B' },
 
   priceHighlightContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F0FDF4', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#BBF7D0', marginTop: 4 },
-  priceHighlight: { color: '#16A34A', fontWeight: '800', fontSize: 24 },
+  priceHighlight: { color: '#2E8B57', fontWeight: '800', fontSize: 24 },
 
   observationCard: { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
   observationText: { fontSize: 14, color: '#475569', lineHeight: 22 },
 
-  // DROPDOWN DE BUSCA INTERNA DE PETS
-  dropdownContainer: { backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, marginTop: 8, overflow: 'hidden' },
-  searchBarContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 48, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  searchTextInput: { flex: 1, fontSize: 14 },
-  quickAddBtn: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: '#F8FAFC', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  quickAddBtnText: { color: COLORS.primary, fontSize: 14, fontWeight: '700', marginLeft: 8 },
-  emptyResultsText: { textAlign: 'center', padding: 20, color: '#94A3B8', fontSize: 14 },
-  dropdownItem: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-  dropdownItemActive: { backgroundColor: '#F0F9FF' },
-  petAvatarCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#E2E8F0', justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
-  itemPetName: { fontSize: 15, fontWeight: '600', color: COLORS.text || '#1E293B' },
-  itemTutorName: { fontSize: 13, color: '#64748B', marginTop: 2 },
-
-  // CONFIGURAÇÃO DOS BOTÕES DE AÇÃO
   actionMenuContainer: { marginTop: 12, gap: 12 },
-  btnPrimary: { backgroundColor: '#2ECC71', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 12 },
+  btnPrimary: { backgroundColor: '#2E8B57', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 12 },
   btnPrimaryText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   rowButtons: { flexDirection: 'row', justifyContent: 'space-between' },
-  btnSecondary: { flex: 0.48, backgroundColor: '#F0F9FF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#BAE6FD' },
+  btnSecondary: { flex: 0.48, backgroundColor: '#f9f5fd', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#ebdaff' },
   btnSecondaryText: { color: COLORS.primary, fontSize: 14, fontWeight: '700' },
   btnDanger: { flex: 0.48, backgroundColor: '#FEF2F2', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#FECACA' },
   btnDangerText: { color: '#E74C3C', fontSize: 14, fontWeight: '700' },
 
-  // CONFIGURAÇÕES DE BOTÕES DE SALVAMENTO (EDIÇÃO)
   btnCancelEdit: { flex: 0.48, padding: 16, borderRadius: 12, backgroundColor: '#F1F5F9', alignItems: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
   btnCancelEditText: { color: '#64748B', fontSize: 15, fontWeight: '700' },
   btnSaveEdit: { flex: 0.48, padding: 16, borderRadius: 12, backgroundColor: COLORS.primary, alignItems: 'center' },

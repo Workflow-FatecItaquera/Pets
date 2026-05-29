@@ -172,13 +172,10 @@ export default function Agenda() {
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => handleOpenDetails(item)}
-              style={style.cardPressableWrapper}
-            >
-              <ReservationCard data={item} />
-            </TouchableOpacity>
+            <ReservationCard 
+              data={item} 
+              onPress={() => handleOpenDetails(item)} 
+            />
           )}
           ListEmptyComponent={<Text style={style.emptyText}>Nenhum agendamento para este dia.</Text>}
         />

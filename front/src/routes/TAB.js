@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, useWindowDimensions, Platform } from 'react-nat
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { COLORS, SIZES } from '../styles/theme';
 import Header from '../components/Header';
 import Home from '../screens/Home/index';
@@ -17,7 +16,7 @@ const Tab = createBottomTabNavigator();
 export default function TAB() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const tabItemWidth = (width / 5) * 0.85;
+  const tabItemSize = Math.min((width / 5) * 0.85, 54);
 
   return (
     <Tab.Navigator
@@ -26,12 +25,12 @@ export default function TAB() {
         header: () => <Header />,
         tabBarShowLabel: false,
         tabBarStyle: {
-          height: Platform.OS === 'ios' ? 60 + insets.bottom : 70,
+          height: Platform.OS === 'ios' ? 70 + insets.bottom : 70,
           backgroundColor: COLORS.background,
           borderTopWidth: 0,
           elevation: 0,
-          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 10,
-          paddingTop: 10,
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 8,
+          paddingTop: 14,
           paddingHorizontal: 5,
         },
       }}
@@ -41,7 +40,7 @@ export default function TAB() {
         component={Home} 
         options={{
           tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="home" label="HOME" itemWidth={tabItemWidth} />
+            <CustomTabItem focused={focused} iconName="home" label="HOME" size={tabItemSize} />
           )
         }}
       />
@@ -50,7 +49,7 @@ export default function TAB() {
         component={Agenda} 
         options={{
           tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="calendar-outline" label="AGENDA" itemWidth={tabItemWidth} />
+            <CustomTabItem focused={focused} iconName="calendar-outline" label="AGENDA" size={tabItemSize} />
           )
         }}
       />
@@ -59,7 +58,7 @@ export default function TAB() {
         component={Pets} 
         options={{
           tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="paw" label="PETS" itemWidth={tabItemWidth} />
+            <CustomTabItem focused={focused} iconName="paw" label="PETS" size={tabItemSize} />
           )
         }}
       />
@@ -68,7 +67,7 @@ export default function TAB() {
         component={Finance} 
         options={{
           tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="wallet-outline" label="FINANCE" itemWidth={tabItemWidth} />
+            <CustomTabItem focused={focused} iconName="wallet-outline" label="FINANCE" size={tabItemSize} />
           )
         }}
       />
@@ -77,7 +76,7 @@ export default function TAB() {
         component={Team} 
         options={{
           tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="people-outline" label="TEAM" itemWidth={tabItemWidth} />
+            <CustomTabItem focused={focused} iconName="people-outline" label="TEAM" size={tabItemSize} />
           )
         }}
       />
@@ -85,16 +84,20 @@ export default function TAB() {
   );
 }
 
-const CustomTabItem = ({ focused, iconName, label, itemWidth }) => {
+const CustomTabItem = ({ focused, iconName, label, size }) => {
   return (
     <View style={[
       styles.itemContainer, 
-      { width: itemWidth },
+      { 
+        width: size, 
+        height: size,
+        borderRadius: size / 2
+      },
       focused && styles.itemContainerFocused
     ]}>
       <Ionicons 
         name={iconName} 
-        size={22}
+        size={20}
         color={focused ? COLORS.white : COLORS.inactive} 
       />
       <Text 
@@ -112,15 +115,14 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: SIZES.radiusFull,
+
   },
   itemContainerFocused: {
     backgroundColor: COLORS.primary,
   },
   label: {
-    fontSize: SIZES.fontLabel,
+    fontSize: 9,
     fontWeight: 'bold',
-    marginTop: 4,
+    marginTop: 2,
   }
 });

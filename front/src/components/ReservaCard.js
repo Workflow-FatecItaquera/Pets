@@ -1,122 +1,290 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { COLORS } from '../styles/theme';
 import { BACKEND_URI } from '@env';
 
-const API_URL = BACKEND_URI; 
+const API_URL = BACKEND_URI;
 
-export default function ReservaCard({ data }) {
-  const time = data.startDate
-    ? new Date(data.startDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+export default function ReservaCard({ data, onPress }) {
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+
+  const time = data?.startDate
+    ? new Date(data.startDate).toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : '--:--';
 
   const petName = data?.pet?.name || data?.petName || 'Pet desconhecido';
   const tutorName = data?.pet?.tutor?.name || data?.tutorName || 'Tutor não informado';
-  const statusLabel = data.status || 'AGUARDANDO';
+  const statusLabel = data?.status || 'AGUARDANDO';
+
+  const petType = (data?.pet?.type || data?.petType || '').toLowerCase().trim();
+  const petIconName = petType === 'gato' ? 'cat' : 'dog';
 
   const petId = data?.pet?._id;
+  
+  const rawPhoto = petId ? `${API_URL}/pets/${petId}/photo` : data?.pet?.photo;
+  const petPhotoUrl = typeof rawPhoto === 'string' && rawPhoto.trim().length > 0 ? rawPhoto : null;
 
-  const petPhotoUrl = petId
-    ? `${API_URL}/pets/${petId}/photo`
-    : data?.pet?.photo || null;
+  // Garante o reset do estado de carregamento se o card for reciclado com outro pet
+  useEffect(() => {
+    setIsImageLoaded(false);
+  }, [petPhotoUrl]);
 
-  const petType = data?.pet?.type || data?.petType || '';
-  const petIconName = petType.toLowerCase().trim() === 'gato' ? 'cat' : 'dog';
+  // MEMOIZAÇÃO CRÍTICA: Evita que o expo-image recarregue a imagem a cada mudança de estado do clique
+  const imageSource = useMemo(() => {
+    return petPhotoUrl ? { uri: petPhotoUrl } : null;
+  }, [petPhotoUrl]);
 
   const getStatusTheme = (status) => {
     const normalized = status?.toLowerCase().trim();
-    if (normalized === 'concluído' || normalized === 'concluido' || normalized === 'pago') {
-      return { bg: '#E8F8F5', text: '#27AE60', bar: '#2ECC71' };
+
+    if (['concluído', 'concluido', 'pago'].includes(normalized)) {
+      return { bg: '#EAF7EF', text: '#2E8B57', bar: '#3AA76D' };
     }
-    if (normalized === 'aguardando' || normalized === 'agendado') {
-      return { bg: '#FEF9E7', text: '#B7950B', bar: '#F1C40F' };
+    if (['aguardando', 'agendado'].includes(normalized)) {
+      return { bg: '#FFF7E8', text: '#B7791F', bar: '#D69E2E' };
     }
     if (normalized === 'cancelado') {
-      return { bg: '#FDEDEC', text: '#C0392B', bar: '#E74C3C' };
+      return { bg: '#FDEEEF', text: '#B85063', bar: '#D16A7B' };
     }
-    return { bg: '#F0F2F5', text: COLORS.text, bar: COLORS.primary };
+
+    return { bg: '#F3F4F6', text: COLORS.text, bar: '#7C3AED' };
   };
 
   const theme = getStatusTheme(statusLabel);
 
   return (
-    <View style={styles.cardContainer}>
-      <View style={[styles.leftIndicator, { backgroundColor: theme.bar }]} />
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.card,
+        pressed && styles.cardPressed,
+      ]}
+    >
+      {/* Barra lateral indicadora de status */}
+      <View style={[styles.bar, { backgroundColor: theme.bar }]} />
 
       <View style={styles.content}>
         <View style={styles.header}>
+          <View style={styles.avatar}>
+            
+            {/* PLACEHOLDER: Desmonta completamente após o carregamento para não vazar cor no clique */}
+            {(!petPhotoUrl || !isImageLoaded) && (
+              <View style={styles.placeholder}>
+                <MaterialCommunityIcons
+                  name={petIconName}
+                  size={22}
+                  color="#7C3AED"
+                />
+              </View>
+            )}
 
-          <View style={styles.avatarContainer}>
-            <MaterialCommunityIcons 
-              name={petIconName} 
-              size={22} 
-              color="#7C3AED"
-            />
-            {petPhotoUrl && (
+            {/* FOTO DO PET */}
+            {!!petPhotoUrl && (
               <Image
-                source={{ uri: petPhotoUrl }}
+                source={imageSource}
                 style={styles.avatarImage}
-                transition={200}
-                cachePolicy="disk"
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                onLoad={() => setIsImageLoaded(true)}
               />
             )}
           </View>
 
           <View style={styles.headerText}>
-            <Text style={styles.petName}>{petName}</Text>
-            <Text style={styles.tutorName}>Tutor: {tutorName}</Text>
+            <Text 
+              style={styles.petName} 
+              numberOfLines={1} 
+              ellipsizeMode="tail"
+            >
+              {petName}
+            </Text>
+
+            <Text 
+              style={styles.tutorName} 
+              numberOfLines={1} 
+              ellipsizeMode="tail"
+            >
+              Tutor: {tutorName}
+            </Text>
           </View>
 
-          <View style={[styles.statusBadge, { backgroundColor: theme.bg }]}>
-            <Text style={[styles.statusText, { color: theme.text }]}>
+          <View style={[styles.badge, { backgroundColor: theme.bg }]}>
+            <Text
+              style={[styles.badgeText, { color: theme.text }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
               {statusLabel.toUpperCase()}
             </Text>
           </View>
         </View>
 
-        <View style={styles.detailsRow}>
-          <View style={styles.detailBlock}>
-            <Text style={styles.detailLabel}>HORÁRIO</Text>
-            <Text style={styles.detailValue}>{time}</Text>
+        <View style={styles.details}>
+          <View style={styles.detail}>
+            <Text style={styles.label}>HORÁRIO</Text>
+            <Text style={styles.value}>{time}</Text>
           </View>
 
-          <View style={styles.detailBlock}>
-            <Text style={styles.detailLabel}>SERVIÇO</Text>
-            <Text style={styles.detailValue}>{data.title || 'Serviço Geral'}</Text>
+          <View style={[styles.detail, styles.service]}>
+            <Text style={styles.label}>SERVIÇO</Text>
+            <Text
+              style={styles.value}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {data?.title || 'Serviço Geral'}
+            </Text>
           </View>
         </View>
 
-        {data.notes ? (
+        {!!data?.notes && (
           <View style={styles.footer}>
-            <MaterialCommunityIcons name="text-box-outline" size={16} color={COLORS.inactive} />
-            <Text style={styles.footerText} numberOfLines={1}>{data.notes}</Text>
+            <MaterialCommunityIcons
+              name="text-box-outline"
+              size={15}
+              color="#9CA3AF"
+            />
+            <Text
+              style={styles.footerText}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {data.notes}
+            </Text>
           </View>
-        ) : null}
+        )}
       </View>
-    </View>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  cardContainer: { backgroundColor: COLORS.white, borderRadius: 16, flexDirection: 'row', marginBottom: 15, overflow: 'hidden', elevation: 2, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, borderWidth: 1, borderColor: COLORS.border },
-  leftIndicator: { width: 6 },
-  content: { flex: 1, padding: 15 },
-  header: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 15 },
-
-  avatarContainer: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3E8FF', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', position: 'relative' },
-  avatarImage: { ...StyleSheet.absoluteFillObject },
-
-  headerText: { flex: 1, marginLeft: 10, marginRight: 10 },
-  petName: { fontSize: 16, fontWeight: 'bold', color: COLORS.text },
-  tutorName: { fontSize: 12, color: COLORS.inactive },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  statusText: { fontSize: 10, fontWeight: 'bold' },
-  detailsRow: { flexDirection: 'row', marginBottom: 15 },
-  detailBlock: { marginRight: 40 },
-  detailLabel: { fontSize: 10, color: COLORS.inactive, fontWeight: 'bold', marginBottom: 2 },
-  detailValue: { fontSize: 14, fontWeight: 'bold', color: COLORS.text },
-  footer: { flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 10 },
-  footerText: { fontSize: 12, color: COLORS.inactive, marginLeft: 5, flex: 1 },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    flexDirection: 'row',
+    marginBottom: 15,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#ECECEC',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  // Efeito nativo, moderno e responsivo que engloba o container por completo
+  cardPressed: {
+    opacity: 0.9,
+    transform: [{ scale: 0.99 }],
+    backgroundColor: '#F9FAFB',
+  },
+  bar: { width: 6 },
+  content: {
+    flex: 1,
+    padding: 15,
+    minWidth: 0,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    minWidth: 0,
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    overflow: 'hidden',
+    backgroundColor: '#F3E8FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  placeholder: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
+  },
+  avatarImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    zIndex: 2,
+  },
+  headerText: {
+    flex: 1,
+    marginHorizontal: 10,
+    minWidth: 0, 
+  },
+  petName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  tutorName: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  badge: {
+    maxWidth: 110,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 1,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  details: {
+    flexDirection: 'row',
+    marginBottom: 15,
+    gap: 16,
+  },
+  detail: {
+    flexShrink: 1,
+  },
+  service: {
+    flex: 1,
+    minWidth: 0,
+  },
+  label: {
+    fontSize: 10,
+    color: '#9CA3AF',
+    fontWeight: '700',
+    marginBottom: 2,
+    letterSpacing: 0.4,
+  },
+  value: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F1F1',
+    paddingTop: 10,
+    minWidth: 0,
+  },
+  footerText: {
+    flex: 1, 
+    marginLeft: 5,
+    fontSize: 12,
+    color: '#6B7280',
+  },
 });
