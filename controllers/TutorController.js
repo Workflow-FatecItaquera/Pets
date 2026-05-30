@@ -70,12 +70,13 @@ class TutorController {
         }
     }
 
-    static async clearAll(){
+    static async clearAll() {
         try {
-            Tutor.deleteMany({});
+            await Tutor.deleteMany({}); 
             return "Limpeza concluída";
         } catch (error) {
-            return "Houve um erro";
+            console.error(error);
+            throw new Error("Houve um erro na limpeza");
         }
     }
 }

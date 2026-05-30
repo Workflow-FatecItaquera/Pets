@@ -65,7 +65,8 @@ class PetController {
     static async insertOne(data) {
         await Database.getConnection();
         const pet = new Pet(data);
-        return pet.save();
+        const savedPet = await pet.save();
+        return Pet.findById(savedPet._id).populate("tutor");
     }
 
     static async update(data) {
@@ -79,7 +80,20 @@ class PetController {
             if (!pet) {
                 throw new Error("Pet não encontrado");
             }
-            return pet;
+            if (data.tutorName || data.phone) {
+                await Tutor.findByIdAndUpdate(
+                    pet.tutor, 
+                    {
+                        $set: {
+                            name: data.tutorName,
+                            phone: data.phone
+                        }
+                    }
+                );
+            }
+            const petAtualizado = await Pet.findById(pet._id).populate("tutor");
+
+            return petAtualizado;
         } catch (err) {
             throw err;
         }
@@ -96,19 +110,20 @@ class PetController {
                 id,
                 { $set: { isActive: !currentPet.isActive } },
                 { new: true }
-            );
+            ).populate("tutor");
             return pet;
         } catch (err) {
             throw err;
         }
     }
 
-    static async clearAll(){
+    static async clearAll() {
         try {
-            Pet.deleteMany({});
+            await Pet.deleteMany({});
             return "Limpeza concluída";
         } catch (error) {
-            return "Houve um erro";
+            console.error(error);
+            throw new Error("Houve um erro na limpeza");
         }
     }
 }
