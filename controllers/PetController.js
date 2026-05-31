@@ -72,23 +72,27 @@ class PetController {
     static async update(data) {
         try {
             await Database.getConnection();
+            const petDataToUpdate = { ...data };
+            delete petDataToUpdate.tutor; 
             const pet = await Pet.findByIdAndUpdate(
                 data._id,
-                { $set: data },
+                { $set: petDataToUpdate },
                 { new: true }
             );
             if (!pet) {
                 throw new Error("Pet não encontrado");
             }
-            if (data.tutorName || data.phone) {
+            const novoNomeTutor = data.tutorName || (data.tutor && data.tutor.name);
+            const novoTelefoneTutor = data.phone || (data.tutor && data.tutor.phone);
+            if ((novoNomeTutor || novoTelefoneTutor) && pet.tutor) {
+                const tutorId = pet.tutor._id || pet.tutor;
+                const tutorUpdateData = {};
+                if (novoNomeTutor) tutorUpdateData.name = novoNomeTutor;
+                if (novoTelefoneTutor) tutorUpdateData.phone = novoTelefoneTutor;
                 await Tutor.findByIdAndUpdate(
-                    pet.tutor, 
-                    {
-                        $set: {
-                            name: data.tutorName,
-                            phone: data.phone
-                        }
-                    }
+                    tutorId, 
+                    { $set: tutorUpdateData },
+                    { new: true }
                 );
             }
             const petAtualizado = await Pet.findById(pet._id).populate("tutor");
