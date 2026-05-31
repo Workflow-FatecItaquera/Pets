@@ -19,7 +19,7 @@ export default StyleSheet.create({
   },
   searchIcon: { marginRight: 10 },
   searchInput: { flex: 1, fontSize: 16, color: COLORS.text },
-  
+ 
   listContainer: { paddingHorizontal: SIZES.padding, paddingBottom: 100 },
   emptyText: { textAlign: 'center', color: COLORS.inactive, marginTop: 40, fontSize: 16 },
   
