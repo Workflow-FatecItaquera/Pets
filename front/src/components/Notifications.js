@@ -3,7 +3,7 @@ import { Modal, View, Text, StyleSheet, TouchableOpacity, TouchableWithoutFeedba
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../styles/theme';
 
-export default function NotificationsModal({ 
+export default function Notifications({ 
   visible, 
   onClose, 
   notifications, 

@@ -4,6 +4,7 @@ import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ReservationCard from '../../components/ReservaCard';
 import ReservationModal from '../../components/ReservaModal';
+import ReservaDetails from '../../components/ReservaDetails';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
@@ -11,32 +12,42 @@ import { BACKEND_URI } from '@env';
 const API_URL = BACKEND_URI;
 
 LocaleConfig.locales['pt-br'] = {
-  monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
-  monthNamesShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
-  dayNames: ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'],
-  dayNamesShort: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],
+  monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+  monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+  dayNames: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'],
+  dayNamesShort: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
   today: 'Hoje'
 };
 LocaleConfig.defaultLocale = 'pt-br';
 
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function Agenda() {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [weekDays, setWeekDays] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(null);
+
   const fetchReservations = async () => {
     try {
       setLoading(true);
       const urlCompleta = `${API_URL}/reservations`;
       const response = await fetch(urlCompleta);
-      
+
       if (!response.ok) {
         throw new Error(`Erro do servidor: ${response.status}`);
       }
-      
+
       const data = await response.json();
       setReservations(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -47,17 +58,18 @@ export default function Agenda() {
   };
 
   useEffect(() => {
-    generateWeekDays(new Date(selectedDate + 'T12:00:00'));
+    generateWeekDays(new Date());
     fetchReservations();
   }, []);
 
   const generateWeekDays = (baseDate) => {
     const days = [];
+    const start = new Date(baseDate);
     for (let i = 0; i < 7; i++) {
-      const date = new Date(baseDate);
-      date.setDate(baseDate.getDate() + i);
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
       days.push({
-        dateString: date.toISOString().split('T')[0],
+        dateString: getLocalDateString(date),
         day: date.getDate(),
         weekDay: LocaleConfig.locales['pt-br'].dayNamesShort[date.getDay()].toUpperCase()
       });
@@ -68,7 +80,7 @@ export default function Agenda() {
   const filteredReservations = useMemo(() => {
     return reservations.filter(res => {
       if (!res.startDate) return false;
-      const resDate = new Date(res.startDate).toISOString().split('T')[0];
+      const resDate = getLocalDateString(new Date(res.startDate));
       return resDate === selectedDate;
     }).sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
   }, [reservations, selectedDate]);
@@ -76,8 +88,8 @@ export default function Agenda() {
   const markedDates = useMemo(() => {
     const marks = {};
     reservations.forEach(res => {
-      if(res.startDate){
-        const d = new Date(res.startDate).toISOString().split('T')[0];
+      if (res.startDate) {
+        const d = getLocalDateString(new Date(res.startDate));
         marks[d] = { marked: true, dotColor: COLORS.secondary };
       }
     });
@@ -87,6 +99,11 @@ export default function Agenda() {
 
   const onReservationSaved = () => {
     fetchReservations();
+  };
+
+  const handleOpenDetails = (reservation) => {
+    setSelectedReservation(reservation);
+    setDetailsModalVisible(true);
   };
 
   return (
@@ -99,8 +116,8 @@ export default function Agenda() {
             {weekDays.map((item) => {
               const isActive = item.dateString === selectedDate;
               return (
-                <TouchableOpacity 
-                  key={item.dateString} 
+                <TouchableOpacity
+                  key={item.dateString}
                   style={[style.dayCard, isActive && style.dayCardActive]}
                   onPress={() => setSelectedDate(item.dateString)}
                 >
@@ -109,9 +126,9 @@ export default function Agenda() {
                 </TouchableOpacity>
               );
             })}
-            
-            <TouchableOpacity 
-              style={style.fullCalendarBtn} 
+
+            <TouchableOpacity
+              style={style.fullCalendarBtn}
               onPress={() => setShowFullCalendar(true)}
             >
               <MaterialCommunityIcons name="calendar-month" size={24} color={COLORS.primary} />
@@ -126,7 +143,9 @@ export default function Agenda() {
             current={selectedDate}
             onDayPress={(day) => {
               setSelectedDate(day.dateString);
-              generateWeekDays(new Date(day.dateString + 'T12:00:00'));
+              const [year, month, dayNum] = day.dateString.split('-').map(Number);
+              const localDate = new Date(year, month - 1, dayNum);
+              generateWeekDays(localDate);
               setShowFullCalendar(false);
             }}
             markedDates={markedDates}
@@ -152,7 +171,12 @@ export default function Agenda() {
           keyExtractor={(item) => item._id || Math.random().toString()}
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ReservationCard data={item} />}
+          renderItem={({ item }) => (
+            <ReservationCard 
+              data={item} 
+              onPress={() => handleOpenDetails(item)} 
+            />
+          )}
           ListEmptyComponent={<Text style={style.emptyText}>Nenhum agendamento para este dia.</Text>}
         />
       )}
@@ -161,10 +185,21 @@ export default function Agenda() {
         <MaterialCommunityIcons name="plus" size={30} color={COLORS.white} />
       </TouchableOpacity>
 
-      <ReservationModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
+      <ReservationModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
         selectedDate={selectedDate}
+        apiUrl={API_URL}
+        onSaveSuccess={onReservationSaved}
+      />
+
+      <ReservaDetails
+        visible={detailsModalVisible}
+        onClose={() => {
+          setDetailsModalVisible(false);
+          setSelectedReservation(null);
+        }}
+        reservation={selectedReservation}
         apiUrl={API_URL}
         onSaveSuccess={onReservationSaved}
       />

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert, Image } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
+import { View, Text, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import PetFormModal from '../../components/PetFormModal';
+import { Image } from 'expo-image';
+import PetForm from '../../components/PetForm';
+import PetDetalhes from '../../components/PetDetalhes';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
@@ -13,7 +14,11 @@ export default function Pets() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
+  
+  // Estados para modais
+  const [modalFormVisible, setModalFormVisible] = useState(false);
+  const [detalhesVisible, setDetalhesVisible] = useState(false);
+  const [selectedPet, setSelectedPet] = useState(null);
 
   const fetchPets = async (query = '') => {
     try {
@@ -31,7 +36,6 @@ export default function Pets() {
       }
 
       const data = await response.json();
-      
       setPets(Array.isArray(data) ? data : []);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar a lista de pets.');
@@ -49,16 +53,31 @@ export default function Pets() {
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
+  // Função para abrir os detalhes do pet
+  const handleOpenDetails = (pet) => {
+    setSelectedPet(pet);
+    setDetalhesVisible(true);
+  };
+
   const renderPetCard = ({ item }) => (
-    <TouchableOpacity style={style.cardContainer}>
+    <TouchableOpacity 
+      style={style.cardContainer}
+      onPress={() => handleOpenDetails(item)} 
+    >
       {item.photo ? (
         <Image 
           source={{ uri: `${API_URL}/pets/${item._id}/photo` }} 
           style={style.avatar} 
+          transition={150}
+          cachePolicy="disk"
         />
       ) : (
         <View style={[style.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0E6FF' }]}>
-          <Feather name="user" size={28} color={COLORS.primary} />
+          <MaterialCommunityIcons 
+            name={item.type === 'Gato' ? 'cat' : 'dog'} 
+            size={28} 
+            color={COLORS.primary} 
+          />
         </View>
       )}
 
@@ -111,15 +130,35 @@ export default function Pets() {
         />
       )}
 
-      <TouchableOpacity style={style.fab} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={style.fab} onPress={() => setModalFormVisible(true)}>
         <MaterialCommunityIcons name="plus" size={30} color={COLORS.white} />
       </TouchableOpacity>
 
-      <PetFormModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
+      <PetForm 
+        visible={modalFormVisible} 
+        onClose={() => setModalFormVisible(false)} 
         apiUrl={API_URL}
         onSaveSuccess={() => fetchPets(search)}
+        mode="full"
+      />
+
+      <PetDetalhes
+        visible={detalhesVisible}
+        petData={selectedPet}
+        petId={selectedPet?._id}
+        onClose={() => {
+          setDetalhesVisible(false);
+          setSelectedPet(null);
+        }}
+        onUpdate={(updatedPet) => {
+          fetchPets(search);
+          setSelectedPet(updatedPet);
+        }}
+        onDelete={() => {
+          setDetalhesVisible(false);
+          setSelectedPet(null);
+          fetchPets(search);
+        }}
       />
     </View>
   );
