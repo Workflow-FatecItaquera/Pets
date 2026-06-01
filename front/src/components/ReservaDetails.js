@@ -347,7 +347,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                       <View style={styles.divider} />
 
                       <View style={styles.viewDateTimeGrid}>
-                        {/* LINHA 1: DATA (Largura inteira) */}
                         <View style={styles.viewGridItem}>
                           <View style={styles.iconCircleInfo}>
                             <MaterialCommunityIcons name="calendar-month" size={20} color={COLORS.primary} />
@@ -358,7 +357,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                           </View>
                         </View>
 
-                        {/* LINHA 2: INÍCIO E TÉRMINO (Metade / Metade) */}
                         <View style={styles.viewDateTimeRow}>
                           <View style={[styles.viewGridItem, { flex: 1 }]}>
                             <View style={styles.iconCircleInfo}>
@@ -383,7 +381,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                           </View>
                         </View>
 
-                        {/* LINHA 3: DURAÇÃO (Largura inteira) */}
                         <View style={styles.viewGridItem}>
                           <View style={styles.iconCircleInfo}>
                             <MaterialCommunityIcons name="timer-sand" size={20} color={COLORS.primary} />
@@ -394,7 +391,6 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                           </View>
                         </View>
 
-                        {/* PREÇO FINAL */}
                         <View style={styles.priceHighlightContainer}>
                           <View style={{ flexShrink: 1, marginRight: 10 }}>
                             <Text style={styles.infoLabel}>VALOR TOTAL DO SERVIÇO</Text>

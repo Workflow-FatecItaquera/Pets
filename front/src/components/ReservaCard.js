@@ -29,12 +29,10 @@ export default function ReservaCard({ data, onPress }) {
   const rawPhoto = petId ? `${API_URL}/pets/${petId}/photo` : data?.pet?.photo;
   const petPhotoUrl = typeof rawPhoto === 'string' && rawPhoto.trim().length > 0 ? rawPhoto : null;
 
-  // Garante o reset do estado de carregamento se o card for reciclado com outro pet
   useEffect(() => {
     setIsImageLoaded(false);
   }, [petPhotoUrl]);
 
-  // MEMOIZAÇÃO CRÍTICA: Evita que o expo-image recarregue a imagem a cada mudança de estado do clique
   const imageSource = useMemo(() => {
     return petPhotoUrl ? { uri: petPhotoUrl } : null;
   }, [petPhotoUrl]);
@@ -65,14 +63,12 @@ export default function ReservaCard({ data, onPress }) {
         pressed && styles.cardPressed,
       ]}
     >
-      {/* Barra lateral indicadora de status */}
       <View style={[styles.bar, { backgroundColor: theme.bar }]} />
 
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.avatar}>
-            
-            {/* PLACEHOLDER: Desmonta completamente após o carregamento para não vazar cor no clique */}
+
             {(!petPhotoUrl || !isImageLoaded) && (
               <View style={styles.placeholder}>
                 <MaterialCommunityIcons
@@ -83,7 +79,6 @@ export default function ReservaCard({ data, onPress }) {
               </View>
             )}
 
-            {/* FOTO DO PET */}
             {!!petPhotoUrl && (
               <Image
                 source={imageSource}
@@ -178,7 +173,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
   },
-  // Efeito nativo, moderno e responsivo que engloba o container por completo
   cardPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.99 }],

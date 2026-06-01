@@ -78,7 +78,6 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
     setForm({ ...form, phone: formatPhone(text) });
   };
 
-  // FUNÇÃO CORRIGIDA PARA USAR O SOFT DELETE DO BACKEND
   const handleDelete = () => {
     Alert.alert(
       'Excluir Pet',
@@ -91,8 +90,7 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
           onPress: async () => {
             try {
               setIsDeleting(true);
-              
-              // Ajustado para usar a rota PUT /pets/active
+
               const response = await fetch(`${apiUrl}/pets/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
