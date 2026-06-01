@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URI } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { COLORS } from '../../styles/theme';
 import style from './style';
@@ -99,9 +100,11 @@ export default function Team() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchMembers();
+    }, [fetchMembers])
+  );
 
   const activeMembers = useMemo(() => {
     return members.filter((member) => member.isActive !== false);

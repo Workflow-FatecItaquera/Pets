@@ -46,7 +46,7 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Credenciais inválidas. Tente novamente.');
+        throw new Error('Credenciais inválidas. Tente novamente.');
       }
 
       const token = data.token ? data.token : String(data._id);
