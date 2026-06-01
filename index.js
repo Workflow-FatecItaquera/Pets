@@ -264,7 +264,7 @@ app.post("/pets/quick-create", async (req, res) => {
 app.put("/pets", async (req, res) =>{
     let pet;
     try {
-        const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
+        let { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
         
         const petAtual = await PetController.findById(req.body._id);
         if (!petAtual) {
