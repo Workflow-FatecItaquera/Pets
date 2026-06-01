@@ -37,6 +37,11 @@ export default StyleSheet.create({
     borderWidth: 3, 
     borderColor: COLORS.primary 
   },
+  avatarPlaceholder: {
+    backgroundColor: '#6A0DAD',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   
   badge: { 
     position: 'absolute', 
