@@ -7,6 +7,7 @@ import PetDetalhes from '../../components/PetDetalhes';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 const API_URL = BACKEND_URI;
 
@@ -45,13 +46,15 @@ export default function Pets() {
     }
   };
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+  useFocusEffect(
+    React.useCallback(() => {
+      const delayDebounceFn = setTimeout(() => {
       fetchPets(search);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [search]);
+    }, [search])
+  );
 
   // Função para abrir os detalhes do pet
   const handleOpenDetails = (pet) => {

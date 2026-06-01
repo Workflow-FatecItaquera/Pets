@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOp
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BACKEND_URI } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 import { COLORS } from '../../styles/theme';
 import style from './style';
@@ -145,9 +146,11 @@ export default function Finance() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchReservations();
-  }, [fetchReservations]);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchReservations();
+    }, [fetchReservations])
+  );
 
   const financialData = useMemo(() => {
     const now = new Date();

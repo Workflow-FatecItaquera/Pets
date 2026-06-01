@@ -8,6 +8,7 @@ import ReservaDetails from '../../components/ReservaDetails';
 import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
+import { useFocusEffect } from '@react-navigation/native';
 
 const API_URL = BACKEND_URI;
 
@@ -57,10 +58,12 @@ export default function Agenda() {
     }
   };
 
-  useEffect(() => {
-    generateWeekDays(new Date());
-    fetchReservations();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      generateWeekDays(new Date());
+      fetchReservations();
+    }, [])
+  );
 
   const generateWeekDays = (baseDate) => {
     const days = [];
