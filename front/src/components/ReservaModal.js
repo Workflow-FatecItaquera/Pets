@@ -130,8 +130,8 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       price: totals.price,
       status: 'AGUARDANDO',
       recurrence: {
-        type: form.packageType,
-        active: form.packageType === 'Recorrente'
+        type: 'Avulso',
+        active: false
       }
     };
 
@@ -225,19 +225,6 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
                   </Text>
                 </View>
               )}
-
-              <Text style={styles.sectionLabel}>TIPO DE PACOTE</Text>
-              <View style={styles.packageRow}>
-                {['Avulso', 'Recorrente'].map(type => (
-                  <TouchableOpacity
-                    key={type}
-                    style={[styles.packageBtn, form.packageType === type && styles.packageBtnActive]}
-                    onPress={() => setForm({ ...form, packageType: type })}
-                  >
-                    <Text style={form.packageType === type ? styles.packageTextActive : styles.packageText}>{type}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
 
               <Text style={styles.sectionLabel}>SERVIÇOS (CHECKLIST)</Text>
               {SERVICE_CATALOG.map(serv => {
