@@ -3,17 +3,25 @@ const Database = require("../models/Database");
 
 class TutorController {
 
-    static async findAll(){
+    static async findAll() {
         await Database.getConnection();
-        return Tutor.find({ active: true });
+
+        return Tutor.find({
+            isActive: true
+        });
     }
 
-    static async insertOne(data){
+    static async insertOne(data) {
         await Database.getConnection();
-        const tutor = new Tutor(data);
+
+        const tutor = new Tutor({
+            ...data,
+            isActive: true
+        });
+
         return tutor.save();
     }
-    
+
     static async update(data) {
         try {
             await Database.getConnection();
@@ -29,6 +37,7 @@ class TutorController {
             }
 
             return tutor;
+
         } catch (err) {
             throw err;
         }
@@ -37,17 +46,25 @@ class TutorController {
     static async activeToggle(id) {
         try {
             await Database.getConnection();
+
             const currentTutor = await Tutor.findById(id);
+
             if (!currentTutor) {
                 throw new Error("Tutor não encontrado");
             }
+
             const tutor = await Tutor.findByIdAndUpdate(
                 id,
-                { $set: { active: !currentTutor.active } },
+                {
+                    $set: {
+                        isActive: !currentTutor.isActive
+                    }
+                },
                 { new: true }
             );
 
             return tutor;
+
         } catch (err) {
             throw err;
         }

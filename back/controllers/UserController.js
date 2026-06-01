@@ -6,7 +6,12 @@ class UserController {
 
     static async findAll(){
         await Database.getConnection();
-        return User.find({});
+        return User.find({ isActive: true });
+    }
+
+    static async findById(id){
+        await Database.getConnection();
+        return User.findById(id);
     }
 
     static async createUser(data){
@@ -15,7 +20,10 @@ class UserController {
         const user = new User({
             name: data.name,
             email: data.email,
-            password: hashedPassword
+            password: hashedPassword,
+            picture: data.picture,
+            isActive: true,
+            isAdmin: false
         });
         return user.save();
     }
@@ -57,12 +65,12 @@ class UserController {
         }
     }
 
-    static async activeToggle(data) {
+    static async activeToggle(id) {
         try {
             await Database.getConnection();
             const user = await User.findByIdAndUpdate(
-                data._id,
-                { $set: { isActive: !data.isActive } },
+                id,
+                { $set: { isActive: !user.isActive } },
                 { new: true }
             );
             if (!user) {
@@ -74,12 +82,12 @@ class UserController {
         }
     }
 
-    static async adminToggle(data) {
+    static async adminToggle(id) {
         try {
             await Database.getConnection();
             const user = await User.findByIdAndUpdate(
-                data._id,
-                { $set: { isAdmin: !data.isAdmin } },
+                id,
+                { $set: { isAdmin: !user.isAdmin } },
                 { new: true }
             );
             if (!user) {

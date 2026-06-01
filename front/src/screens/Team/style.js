@@ -1,16 +1,278 @@
-import { StyleSheet } from "react-native";
-import { COLORS, SIZES } from "../../styles/theme";
+import { Platform, StyleSheet } from 'react-native';
+
+import { COLORS, SIZES } from '../../styles/theme';
+
+const shadow = {
+  ...Platform.select({
+    ios: {
+      shadowColor: '#7A6E87',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 18,
+    },
+    android: {
+      elevation: 5,
+    },
+    default: {
+      shadowColor: '#7A6E87',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.12,
+      shadowRadius: 18,
+    },
+  }),
+};
 
 export default StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center', 
-        backgroundColor: COLORS.background
-    },
-    title: {
-        fontSize: SIZES.fontTitle,
-        fontWeight: 'bold',
-        color: COLORS.text
-    }
-})
+  container: {
+    flex: 1,
+    backgroundColor: '#FBF8FC',
+  },
+  content: {
+    paddingHorizontal: SIZES.padding,
+    paddingTop: 26,
+    paddingBottom: 28,
+  },
+  eyebrow: {
+    color: '#9B6800',
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  pageTitle: {
+    marginTop: 8,
+    color: COLORS.primary,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  subtitle: {
+    maxWidth: 310,
+    marginTop: 8,
+    color: '#6D6576',
+    fontSize: 13,
+    lineHeight: 19,
+    fontWeight: '500',
+  },
+  summaryCard: {
+    minHeight: 76,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 25,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 20,
+    ...shadow,
+  },
+  summaryIcon: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+    borderRadius: 22,
+    backgroundColor: '#FFE4A8',
+  },
+  summaryLabel: {
+    color: '#8B8493',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  summaryValue: {
+    marginTop: 4,
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  filterBar: {
+    height: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 24,
+    marginBottom: 18,
+    borderRadius: SIZES.radiusFull,
+    backgroundColor: COLORS.white,
+    padding: 6,
+    ...shadow,
+  },
+  filterButton: {
+    flex: 1,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: SIZES.radiusFull,
+  },
+  filterButtonActive: {
+    backgroundColor: COLORS.primary,
+  },
+  filterText: {
+    color: '#7B7185',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  filterTextActive: {
+    color: COLORS.white,
+  },
+  loader: {
+    marginVertical: 30,
+  },
+  emptyCard: {
+    minHeight: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    ...shadow,
+  },
+  emptyText: {
+    marginTop: 8,
+    color: '#7B7185',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  memberCard: {
+    minHeight: 170,
+    marginBottom: 18,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    padding: 18,
+    ...shadow,
+  },
+  memberHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: COLORS.border,
+  },
+  avatarFallback: {
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: '#E7D1FF',
+  },
+  avatarInitials: {
+    color: COLORS.primary,
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  onlineDot: {
+    position: 'absolute',
+    right: -3,
+    bottom: -3,
+    width: 15,
+    height: 15,
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    borderRadius: 8,
+    backgroundColor: COLORS.secondary,
+  },
+  statusBadge: {
+    borderRadius: SIZES.radiusFull,
+    backgroundColor: '#F1E4FF',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  statusBadgeInactive: {
+    backgroundColor: '#ECE8EF',
+  },
+  statusText: {
+    color: COLORS.primary,
+    fontSize: 9,
+    fontWeight: '900',
+  },
+  statusTextInactive: {
+    color: '#746B7E',
+  },
+  memberName: {
+    marginTop: 18,
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  memberRole: {
+    marginTop: 3,
+    color: '#655B70',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  memberFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 22,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  memberEmail: {
+    flex: 1,
+    marginLeft: 10,
+    color: '#8B8493',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  formCard: {
+    marginTop: 8,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    padding: 22,
+    ...shadow,
+  },
+  formTitle: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 18,
+  },
+  inputLabel: {
+    marginTop: 11,
+    marginBottom: 7,
+    color: '#6E637A',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  input: {
+    minHeight: 47,
+    borderRadius: 5,
+    backgroundColor: '#E8E1E5',
+    paddingHorizontal: 13,
+    color: COLORS.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  submitButton: {
+    height: 58,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 24,
+    borderRadius: SIZES.radiusFull,
+    backgroundColor: COLORS.primary,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  floatingButton: {
+    width: 58,
+    height: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 22,
+    marginRight: 2,
+    borderRadius: 29,
+    backgroundColor: COLORS.secondary,
+    ...shadow,
+  },
+});
