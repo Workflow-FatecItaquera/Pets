@@ -262,6 +262,7 @@ app.post("/pets/quick-create", async (req, res) => {
 });
 
 app.put("/pets", async (req, res) =>{
+    let pet;
     try {
         const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
         
@@ -308,13 +309,13 @@ app.put("/pets", async (req, res) =>{
                 uploadStream.on("error", reject);
             });
 
-            const pet = await PetController.update({
+            pet = await PetController.update({
                 ...req.body,
-            photo: photoId
+                photo: photoId
             });
         } else {
             delete req.body.photo;
-            const pet = await PetController.update(req.body);
+            pet = await PetController.update(req.body);
         }
         
 
