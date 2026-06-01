@@ -20,7 +20,8 @@
         "foregroundImage": "./front/assets/android-icon-foreground.png",
         "backgroundImage": "./front/assets/android-icon-background.png",
         "monochromeImage": "./front/assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.workflowfatecitaquera.Pets"
     },
     "web": {
       "favicon": "./front/assets/favicon.png"
