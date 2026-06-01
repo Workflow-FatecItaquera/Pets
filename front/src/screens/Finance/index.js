@@ -51,7 +51,7 @@ function getGrowthText(value, filterType) {
 function sumReservations(reservations, startDate = null, endDate = null) {
   return reservations.reduce((total, reservation) => {
     const status = String(reservation.status).toUpperCase();
-    if (status !== 'PAGO') return total;
+    if (status !== 'CONCLUIDO') return total;
 
     const date = getReservationDate(reservation);
     const inRange = (!startDate || date >= startDate) && (!endDate || date < endDate);
@@ -83,7 +83,7 @@ function SummaryCard({ icon, iconBackground, label, value, valueColor }) {
 
 function ReservationTransactionItem({ item }) {
   const status = String(item.status).toUpperCase();
-  const isEncerrado = status === 'PAGO';
+  const isEncerrado = status === 'CONCLUIDO';
   const petName = item.pet?.name ? `: ${item.pet.name}` : '';
 
   return (
@@ -109,7 +109,7 @@ function ReservationTransactionItem({ item }) {
             style.statusText,
             isEncerrado ? style.confirmedText : style.pendingText,
           ]}>
-            {isEncerrado ? 'Pago' : 'Pendente'}
+            {isEncerrado ? 'Concluído' : 'Pendente'}
           </Text>
         </View>
       </View>
@@ -199,7 +199,7 @@ export default function Finance() {
     return [...reservations]
       .filter((res) => {
         const status = String(res.status).toUpperCase();
-        const isEncerrado = status === 'PAGO';
+        const isEncerrado = status === 'CONCLUIDO';
         const date = getReservationDate(res);
         return isEncerrado && Number(res.price) > 0 && date >= limitDate;
       })
@@ -279,7 +279,7 @@ export default function Finance() {
 
           <View style={style.statementCard}>
             {filteredRecentReservations.length === 0 ? (
-              <Text style={style.emptyText}>Nenhum serviço marcado com o status "pago" neste período. O serviço deve ser pago para aparecer aqui.</Text>
+              <Text style={style.emptyText}>Nenhum serviço marcado com o status "concluído" neste período. O serviço deve ser concluído para aparecer aqui.</Text>
             ) : (
               filteredRecentReservations.map((item) => (
                 <ReservationTransactionItem key={item._id} item={item} />
