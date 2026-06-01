@@ -218,7 +218,7 @@ app.get("/pets/:id/photo", async (req, res) => {
 
 app.post("/pets/quick-create", async (req, res) => {
   try {
-    const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
+    let { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
 
     let photoId = null;
 
