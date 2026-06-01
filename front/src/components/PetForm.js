@@ -69,8 +69,16 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
+
+      const extension = uri.split('.').pop().toLowerCase();
+      let mimeType = "image/jpeg"; // fallback padrão
+      if (extension === "png") mimeType = "image/png";
+      else if (extension === "jpg" || extension === "jpeg") mimeType = "image/jpeg";
+      else if (extension === "gif") mimeType = "image/gif";
+
       const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-      setForm({ ...form, photo: base64, existingPhotoUri: null });
+      const photoData = `data:${mimeType};base64,${base64}`;
+      setForm({ ...form, photo: photoData, existingPhotoUri: null });
     }
   };
 
@@ -191,7 +199,7 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
               <View style={styles.fieldContainer}>
                 <TouchableOpacity style={styles.photoUpload} onPress={pickImage}>
                   {form.photo ? (
-                    <Image source={{ uri: `data:image/jpeg;base64,${form.photo}` }} style={styles.petPhoto} />
+                    <Image source={{ uri: `${form.photo}` }} style={styles.petPhoto} />
                   ) : form.existingPhotoUri ? (
                     <Image source={{ uri: form.existingPhotoUri }} style={styles.petPhoto} />
                   ) : (
