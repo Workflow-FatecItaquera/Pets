@@ -1,8 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
-import * as SecureStore from 'expo-secure-store';
 import { BACKEND_URI } from '@env';
 import { COLORS, SIZES } from '../../styles/theme';
 import style from './style';
@@ -51,16 +49,11 @@ export default function Login() {
         throw new Error(data.error || 'Credenciais inválidas. Tente novamente.');
       }
 
-      const stringValue = JSON.stringify(data);
-
-      if (Platform.OS === 'web') {
-        localStorage.setItem('userToken', stringValue);
-      } else {
-        await SecureStore.setItemAsync('userToken', stringValue);
-      }
+      const token = data.token ? data.token : String(data._id);
+      const user = data;
 
       if (signIn) {
-        await signIn(stringValue); 
+        await signIn(token, user); 
       }
 
     } catch (error) {
@@ -82,11 +75,6 @@ export default function Login() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={style.headerContainer}>
-          {/* <Image 
-            source={require('../../assets/logo.png')} 
-            style={style.logo}
-            contentFit="contain"
-          /> */}
           <Text style={style.title}>Bem-vindo(a)!</Text>
           <Text style={style.subtitle}>Faça login para gerenciar a Srta. Pelos.</Text>
         </View>

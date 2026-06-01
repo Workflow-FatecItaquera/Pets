@@ -1,5 +1,5 @@
-// src/contexts/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 export const AuthContext = createContext();
@@ -12,8 +12,16 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const bootstrapAsync = async () => {
       try {
-        const token = await SecureStore.getItemAsync('userToken');
-        const userString = await SecureStore.getItemAsync('userData');
+        let token = null;
+        let userString = null;
+
+        if (Platform.OS === 'web') {
+          token = localStorage.getItem('userToken');
+          userString = localStorage.getItem('userData');
+        } else {
+          token = await SecureStore.getItemAsync('userToken');
+          userString = await SecureStore.getItemAsync('userData');
+        }
         
         if (token && userString) {
           setUserToken(token);
@@ -30,17 +38,35 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signIn = async (token, user) => {
-    await SecureStore.setItemAsync('userToken', token);
-    await SecureStore.setItemAsync('userData', JSON.stringify(user));
-    setUserToken(token);
-    setUserData(user);
+    try {
+      if (Platform.OS === 'web') {
+        localStorage.setItem('userToken', token);
+        localStorage.setItem('userData', JSON.stringify(user));
+      } else {
+        await SecureStore.setItemAsync('userToken', token);
+        await SecureStore.setItemAsync('userData', JSON.stringify(user));
+      }
+      setUserToken(token);
+      setUserData(user);
+    } catch (error) {
+      console.error("Erro ao salvar sessão:", error);
+    }
   };
 
   const signOut = async () => {
-    await SecureStore.deleteItemAsync('userToken');
-    await SecureStore.deleteItemAsync('userData');
-    setUserToken(null);
-    setUserData(null);
+    try {
+      if (Platform.OS === 'web') {
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userData');
+      } else {
+        await SecureStore.deleteItemAsync('userToken');
+        await SecureStore.deleteItemAsync('userData');
+      }
+      setUserToken(null);
+      setUserData(null);
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+    }
   };
 
   return (
