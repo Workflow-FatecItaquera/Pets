@@ -1,20 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker'; // Importação do ImagePicker
 import style, { colors } from './style';
 import { BACKEND_URI } from '@env';
+import { AuthContext } from '../../contexts/AuthContext';
 
 export default function Profile() {
-    const [userData, setUserData] = useState({
-        name: 'Letícia Mariana',
-        admin: true,
-        roleLabel: 'ADMINISTRADORA',
-        email: 'mariana@peloselambeijos.com.br',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150',
+    const { userData, signOut } = useContext(AuthContext);
+    const [profileData, setProfileData] = useState({
+        name: userData?.name || '',
+        email: userData?.email || '',
+        admin: userData?.isAdmin || false,
+        roleLabel: userData?.isAdmin ? 'ADMINISTRADOR(A)' : 'FUNCIONÁRIO(A)',
+        avatar: userData?.picture || null, // Alterado para null se não houver foto
     });
 
     const [isEditing, setIsEditing] = useState(false);
-    const isAdmin = userData.admin === true;
+    const isAdmin = profileData.admin === true;
+
+    useEffect(() => {
+        if (userData) {
+            setProfileData({
+                name: userData.name || '',
+                email: userData.email || '',
+                admin: userData.isAdmin || false,
+                roleLabel: userData.isAdmin ? 'ADMINISTRADOR(A)' : 'FUNCIONÁRIO(A)',
+                avatar: userData.picture || null, // Alterado para null
+            });
+        }
+    }, [userData]);
 
     const getBadgeConfig = () => {
         if (isAdmin) {
@@ -35,9 +50,48 @@ export default function Profile() {
 
     const badge = getBadgeConfig();
 
-    const handleSave = () => {
+    // Função para abrir a galeria e selecionar a imagem
+    const handleImagePicker = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        
+        if (status !== 'granted') {
+            Alert.alert('Permissão necessária', 'Precisamos de acesso à sua galeria para alterar a foto de perfil.');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1], // Força um corte quadrado
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            setProfileData(prev => ({ ...prev, avatar: result.assets[0].uri }));
+            // Aqui você pode adicionar a lógica para enviar a nova foto para o seu backend
+        }
+    };
+
+    const handleSave = async () => {
         setIsEditing(false);
-        Alert.alert("Sucesso", "Perfil atualizado!");
+        Alert.alert("Sucesso", "Informações atualizadas localmente!");
+    };
+
+    const handleLogout = async () => {
+        Alert.alert(
+            "Sair",
+            "Tem certeza que deseja sair da sua conta?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                { 
+                    text: "Sair", 
+                    style: "destructive",
+                    onPress: async () => {
+                        await signOut();
+                    } 
+                }
+            ]
+        );
     };
 
     return (
@@ -48,9 +102,16 @@ export default function Profile() {
                 <View style={style.avatarContainer}>
                     <TouchableOpacity
                         disabled={!badge.canClick}
-                        onPress={() => Alert.alert("Upload", "Selecionar nova foto")}
+                        onPress={handleImagePicker} // Chama a função do picker
                     >
-                        <Image source={{ uri: userData.avatar }} style={style.avatar} />
+                        {/* Condicional: Mostra a imagem ou o ícone roxo com placeholder */}
+                        {profileData.avatar ? (
+                            <Image source={{ uri: profileData.avatar }} style={style.avatar} />
+                        ) : (
+                            <View style={[style.avatar, style.avatarPlaceholder]}>
+                                <Ionicons name="person" size={50} color={colors.white} />
+                            </View>
+                        )}
 
                         <View style={[style.badge, badge.style]}>
                             <Ionicons name={badge.icon} size={12} color={badge.color} />
@@ -58,10 +119,10 @@ export default function Profile() {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={style.userName}>{userData.name}</Text>
+                <Text style={style.userName}>{profileData.name}</Text>
                 <View style={[style.rolePill, isAdmin ? style.rolePillAdmin : style.rolePillEmployee]}>
                     <Text style={[style.roleText, isAdmin ? style.roleTextAdmin : style.roleTextEmployee]}>
-                        ({userData.roleLabel})
+                        ({profileData.roleLabel})
                     </Text>
                 </View>
             </View>
@@ -76,11 +137,11 @@ export default function Profile() {
                 {isEditing ? (
                     <TextInput
                         style={style.input}
-                        value={userData.name}
-                        onChangeText={(text) => setUserData({ ...userData, name: text })}
+                        value={profileData.name}
+                        onChangeText={(text) => setProfileData({ ...profileData, name: text })}
                     />
                 ) : (
-                    <Text style={style.infoValueText}>{userData.name}</Text>
+                    <Text style={style.infoValueText}>{profileData.name}</Text>
                 )}
 
                 <View style={style.separatorThin} />
@@ -89,12 +150,12 @@ export default function Profile() {
                 {isEditing ? (
                     <TextInput
                         style={style.input}
-                        value={userData.email}
+                        value={profileData.email}
                         keyboardType="email-address"
-                        onChangeText={(text) => setUserData({ ...userData, email: text })}
+                        onChangeText={(text) => setProfileData({ ...profileData, email: text })}
                     />
                 ) : (
-                    <Text style={style.infoValueText}>{userData.email}</Text>
+                    <Text style={style.infoValueText}>{profileData.email}</Text>
                 )}
 
                 {isAdmin && (
@@ -123,7 +184,7 @@ export default function Profile() {
                 </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={style.logoutButton}>
+            <TouchableOpacity style={style.logoutButton} onPress={handleLogout}>
                 <Ionicons name="log-out-outline" size={20} color={colors.white} style={style.logoutIcon} />
                 <Text style={style.logoutText}>Sair da Conta</Text>
             </TouchableOpacity>
