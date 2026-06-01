@@ -265,7 +265,7 @@ app.put("/pets", async (req, res) =>{
     try {
         const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
         
-        const petAtual = await Pet.findById(req.body._id);
+        const petAtual = await PetController.findById(req.body._id);
         if (!petAtual) {
             return res.status(404).json({ error: "Pet não encontrado" });
         }
