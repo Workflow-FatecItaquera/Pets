@@ -20,7 +20,9 @@ app.use(express.json({limit:"15mb"}));
 
 let bucket;
 
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI,{
+    dbName: "db_PelosLambeijos",
+})
   .then(() => {
     console.log("Conectado ao MongoDB Atlas");
 
