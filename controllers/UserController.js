@@ -6,7 +6,7 @@ class UserController {
 
     static async findAll(){
         await Database.getConnection();
-        return User.find({ isActive: true });
+        return User.find();
     }
 
     static async findById(id){
@@ -22,7 +22,6 @@ class UserController {
             email: data.email,
             password: hashedPassword,
             picture: data.picture,
-            phone: data.phone,
             isActive: true,
             isAdmin: false
         });
@@ -69,14 +68,14 @@ class UserController {
     static async activeToggle(id) {
         try {
             await Database.getConnection();
-            const user = await User.findByIdAndUpdate(
-                id,
-                { $set: { isActive: !user.isActive } },
-                { new: true }
-            );
+            
+            const user = await User.findById(id);
             if (!user) {
                 throw new Error("Usuário não encontrado");
             }
+            user.isActive = !user.isActive;
+            await user.save();
+            
             return user;
         } catch (err) {
             throw err;
@@ -86,14 +85,15 @@ class UserController {
     static async adminToggle(id) {
         try {
             await Database.getConnection();
-            const user = await User.findByIdAndUpdate(
-                id,
-                { $set: { isAdmin: !user.isAdmin } },
-                { new: true }
-            );
+            
+            const user = await User.findById(id);
             if (!user) {
                 throw new Error("Usuário não encontrado");
             }
+            
+            user.isAdmin = !user.isAdmin;
+            await user.save();
+            
             return user;
         } catch (err) {
             throw err;
