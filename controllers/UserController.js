@@ -22,6 +22,7 @@ class UserController {
             email: data.email,
             password: hashedPassword,
             picture: data.picture,
+            phone: data.phone,
             isActive: true,
             isAdmin: false
         });
