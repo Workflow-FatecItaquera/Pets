@@ -74,6 +74,9 @@ class PetController {
             await Database.getConnection();
             const petDataToUpdate = { ...data };
             delete petDataToUpdate.tutor; 
+            if (data.photo === undefined) {
+                delete petDataToUpdate.photo; // não mexe na foto
+            }
             const pet = await Pet.findByIdAndUpdate(
                 data._id,
                 { $set: petDataToUpdate },
