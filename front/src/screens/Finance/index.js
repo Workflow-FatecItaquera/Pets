@@ -162,17 +162,22 @@ export default function Finance() {
     const currentWeekStart = new Date(now);
     currentWeekStart.setHours(0, 0, 0, 0);
     currentWeekStart.setDate(now.getDate() - now.getDay());
+    
+    const nextWeekStart = new Date(currentWeekStart);
+    nextWeekStart.setDate(currentWeekStart.getDate() + 7);
+
     const previousWeekStart = new Date(currentWeekStart);
     previousWeekStart.setDate(currentWeekStart.getDate() - 7);
 
     const targetStartDate = filter === 'weekly' ? currentWeekStart : currentMonthStart;
-    const targetEndDate = filter === 'weekly' ? null : nextMonthStart;
+    const targetEndDate = filter === 'weekly' ? nextWeekStart : nextMonthStart;
 
     const periodIncome = sumReservations(reservations, targetStartDate, targetEndDate);
 
     const currentMonthIncome = sumReservations(reservations, currentMonthStart, nextMonthStart);
     const previousMonthIncome = sumReservations(reservations, previousMonthStart, currentMonthStart);
-    const currentWeekIncome = sumReservations(reservations, currentWeekStart);
+   
+    const currentWeekIncome = sumReservations(reservations, currentWeekStart, nextWeekStart);
     const previousWeekIncome = sumReservations(reservations, previousWeekStart, currentWeekStart);
 
     const growth = filter === 'weekly'
@@ -188,12 +193,17 @@ export default function Finance() {
 
   const filteredRecentReservations = useMemo(() => {
     const now = new Date();
-    let limitDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    let limitStartDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    let limitEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     if (filter === 'weekly') {
-      limitDate = new Date(now);
-      limitDate.setHours(0, 0, 0, 0);
-      limitDate.setDate(now.getDate() - now.getDay());
+      limitStartDate = new Date(now);
+      limitStartDate.setHours(0, 0, 0, 0);
+      limitStartDate.setDate(now.getDate() - now.getDay());
+
+      limitEndDate = new Date(limitStartDate);
+      limitEndDate.setDate(limitStartDate.getDate() + 7);
     }
 
     return [...reservations]
@@ -201,7 +211,8 @@ export default function Finance() {
         const status = String(res.status).toUpperCase();
         const isEncerrado = status === 'CONCLUIDO';
         const date = getReservationDate(res);
-        return isEncerrado && Number(res.price) > 0 && date >= limitDate;
+        
+        return isEncerrado && Number(res.price) > 0 && date >= limitStartDate && date < limitEndDate;
       })
       .sort((a, b) => getReservationDate(b) - getReservationDate(a));
   }, [reservations, filter]);
