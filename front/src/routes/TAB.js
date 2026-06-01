@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthContext } from '../contexts/AuthContext';
 import { COLORS, SIZES } from '../styles/theme';
 import Header from '../components/Header';
 import Home from '../screens/Home/index';
@@ -17,6 +18,8 @@ export default function TAB() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const tabItemSize = Math.min((width / 5) * 0.85, 54);
+  const { userData } = useContext(AuthContext);
+  const isAdmin = userData?.isAdmin || false; 
 
   return (
     <Tab.Navigator
@@ -62,24 +65,28 @@ export default function TAB() {
           )
         }}
       />
-      <Tab.Screen 
-        name="Finance" 
-        component={Finance} 
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="wallet-outline" label="FINANCE" size={tabItemSize} />
-          )
-        }}
-      />
-      <Tab.Screen 
-        name="Team" 
-        component={Team} 
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <CustomTabItem focused={focused} iconName="people-outline" label="TEAM" size={tabItemSize} />
-          )
-        }}
-      />
+      {isAdmin && (
+        <>
+          <Tab.Screen 
+            name="Finance" 
+            component={Finance} 
+            options={{
+              tabBarIcon: ({ focused }) => (
+                <CustomTabItem focused={focused} iconName="wallet-outline" label="FINANCE" size={tabItemSize} />
+              )
+            }}
+          />
+          <Tab.Screen 
+            name="Team" 
+            component={Team} 
+            options={{
+              tabBarIcon: ({ focused }) => (
+                <CustomTabItem focused={focused} iconName="people-outline" label="TEAM" size={tabItemSize} />
+              )
+            }}
+          />
+        </>
+      )}
     </Tab.Navigator>
   );
 }
@@ -115,7 +122,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   itemContainerFocused: {
     backgroundColor: COLORS.primary,
