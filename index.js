@@ -261,11 +261,66 @@ app.post("/pets/quick-create", async (req, res) => {
   }
 });
 
-app.put("/pets", async (req, res) => {
+app.put("/pets", async (req, res) =>{
     try {
-        const pet = await PetController.update(req.body);
-        res.json(pet);
+        const { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
+        
+        const petAtual = await Pet.findById(req.body._id);
+        if (!petAtual) {
+            return res.status(404).json({ error: "Pet não encontrado" });
+        }
+
+        let photoId = petAtual.photo;
+
+        if (photo) {
+
+            if (petAtual.photo) {
+                try {
+                    await bucket.delete(new ObjectId(petAtual.photo));
+                    console.log("Foto antiga removida:", petAtual.photo);
+                } catch (err) {
+                    console.error("Erro ao apagar foto antiga:", err);
+                }
+            }
+
+            let extension = "jpg";
+            let mimeType = "image/jpeg";
+
+            if (photo.startsWith("data:image")) {
+                mimeType = photo.substring(photo.indexOf(":") + 1, photo.indexOf(";"));
+                extension = mimeType.split("/")[1];
+                
+                photo = photo.split(",")[1];
+            }
+
+            const buffer = Buffer.from(photo, "base64");
+
+            const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, {
+                contentType: mimeType,
+            });
+            uploadStream.end(buffer);
+
+            await new Promise((resolve, reject) => {
+                uploadStream.on("finish", (file) => {
+                photoId = uploadStream.id;
+                resolve();
+                });
+                uploadStream.on("error", reject);
+            });
+
+            const pet = await PetController.update({
+                ...req.body,
+            photo: photoId
+            });
+        } else {
+            delete req.body.photo;
+            const pet = await PetController.update(req.body);
+        }
+        
+
+        res.status(201).json(pet);
     } catch (err) {
+        console.error(err.message);
         res.status(400).json({ error: err.message });
     }
 });
