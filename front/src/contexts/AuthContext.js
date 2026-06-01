@@ -53,6 +53,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = async (user) => {
+    try {
+      if (Platform.OS === 'web') {
+        localStorage.setItem('userData', JSON.stringify(user));
+      } else {
+        await SecureStore.setItemAsync('userData', JSON.stringify(user));
+      }
+      setUserData(user);
+    } catch (error) {
+      console.error("Erro ao atualizar os dados:", error);
+    }
+  };
+
   const signOut = async () => {
     try {
       if (Platform.OS === 'web') {
@@ -70,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoading, userToken, userData, signIn, signOut }}>
+    <AuthContext.Provider value={{ isLoading, userToken, userData, signIn, signOut, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

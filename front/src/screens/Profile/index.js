@@ -1,22 +1,39 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker'; // Importação do ImagePicker
+import * as ImagePicker from 'expo-image-picker';
 import style, { colors } from './style';
 import { BACKEND_URI } from '@env';
 import { AuthContext } from '../../contexts/AuthContext';
 
 export default function Profile() {
-    const { userData, signOut } = useContext(AuthContext);
+    const { userData, signOut, updateUser } = useContext(AuthContext);
+
+    const formatPhoneNumber = (text) => {
+        if (!text) return '';
+        let value = text.replace(/\D/g, '');
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        value = value.replace(/^(\d{2})(\d)/g, '($1) $2');
+        value = value.replace(/(\d)(\d{4})$/, '$1-$2');
+        
+        return value;
+    };
+
     const [profileData, setProfileData] = useState({
         name: userData?.name || '',
         email: userData?.email || '',
+        phone: formatPhoneNumber(userData?.phone || ''), 
         admin: userData?.isAdmin || false,
         roleLabel: userData?.isAdmin ? 'ADMINISTRADOR(A)' : 'FUNCIONÁRIO(A)',
-        avatar: userData?.picture || null, // Alterado para null se não houver foto
+        avatar: userData?.picture || null, 
     });
 
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    
     const isAdmin = profileData.admin === true;
 
     useEffect(() => {
@@ -24,9 +41,10 @@ export default function Profile() {
             setProfileData({
                 name: userData.name || '',
                 email: userData.email || '',
+                phone: formatPhoneNumber(userData.phone || ''),
                 admin: userData.isAdmin || false,
                 roleLabel: userData.isAdmin ? 'ADMINISTRADOR(A)' : 'FUNCIONÁRIO(A)',
-                avatar: userData.picture || null, // Alterado para null
+                avatar: userData.picture || null,
             });
         }
     }, [userData]);
@@ -44,13 +62,12 @@ export default function Profile() {
             icon: "pencil",
             color: colors.white,
             style: style.badgeEmployee,
-            canClick: true
+            canClick: isEditing 
         };
     };
 
     const badge = getBadgeConfig();
 
-    // Função para abrir a galeria e selecionar a imagem
     const handleImagePicker = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         
@@ -62,24 +79,69 @@ export default function Profile() {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [1, 1], // Força um corte quadrado
+            aspect: [1, 1],
             quality: 0.8,
+            base64: true,
         });
 
         if (!result.canceled) {
-            setProfileData(prev => ({ ...prev, avatar: result.assets[0].uri }));
-            // Aqui você pode adicionar a lógica para enviar a nova foto para o seu backend
+            const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
+            setProfileData(prev => ({ ...prev, avatar: base64Image }));
         }
     };
 
     const handleSave = async () => {
-        setIsEditing(false);
-        Alert.alert("Sucesso", "Informações atualizadas localmente!");
+        if (!profileData.name.trim() || !profileData.email.trim()) {
+            Alert.alert("Atenção", "Os campos Nome e E-mail são obrigatórios e não podem ficar vazios.");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(profileData.email)) {
+            Alert.alert("Atenção", "Por favor, insira um endereço de e-mail válido.");
+            return;
+        }
+
+        setLoading(true);
+        
+        try {
+            const response = await fetch(`${BACKEND_URI}/users`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${userData?.token || ''}`
+                },
+                body: JSON.stringify({
+                    _id: userData?._id,
+                    name: profileData.name.trim(),
+                    email: profileData.email.toLowerCase().trim(),
+                    picture: profileData.avatar,
+                    phone: profileData.phone.trim() 
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Não foi possível atualizar as informações.");
+            }
+
+            await updateUser({ ...userData, ...data });
+
+            Alert.alert("Sucesso", "Suas informações foram atualizadas com sucesso na base de dados.");
+            setIsEditing(false);
+            
+        } catch (error) {
+            console.error('[Profile Update Error]', error);
+            Alert.alert("Erro ao Salvar", error.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleLogout = async () => {
+    const handleLogout = () => {
         Alert.alert(
-            "Sair",
+            "Encerrar Sessão",
             "Tem certeza que deseja sair da sua conta?",
             [
                 { text: "Cancelar", style: "cancel" },
@@ -94,100 +156,181 @@ export default function Profile() {
         );
     };
 
+    const handleMockPasswordRecovery = () => {
+        setModalVisible(false);
+        setTimeout(() => {
+            Alert.alert(
+                "Aviso do Sistema",
+                "Funcionalidade em desenvolvimento.",
+                [{ text: "Entendido", style: "default" }]
+            );
+        }, 300);
+    };
+
     return (
-        <ScrollView style={style.container} contentContainerStyle={style.scrollContent}>
-            <Text style={style.headerTitle}>Perfil</Text>
+        <View style={style.container}>
+            <ScrollView contentContainerStyle={style.scrollContent} showsVerticalScrollIndicator={false}>
+                <Text style={style.headerTitle}>Meu Perfil</Text>
 
-            <View style={style.userSection}>
-                <View style={style.avatarContainer}>
-                    <TouchableOpacity
-                        disabled={!badge.canClick}
-                        onPress={handleImagePicker} // Chama a função do picker
-                    >
-                        {/* Condicional: Mostra a imagem ou o ícone roxo com placeholder */}
-                        {profileData.avatar ? (
-                            <Image source={{ uri: profileData.avatar }} style={style.avatar} />
-                        ) : (
-                            <View style={[style.avatar, style.avatarPlaceholder]}>
-                                <Ionicons name="person" size={50} color={colors.white} />
+                <View style={style.userSection}>
+                    <View style={style.avatarContainer}>
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            disabled={!badge.canClick || loading}
+                            onPress={handleImagePicker}
+                        >
+                            {profileData.avatar ? (
+                                <Image source={{ uri: profileData.avatar }} style={style.avatar} />
+                            ) : (
+                                <View style={[style.avatar, style.avatarPlaceholder]}>
+                                    <Ionicons name="person" size={45} color={colors.white} />
+                                </View>
+                            )}
+
+                            <View style={[style.badge, badge.style]}>
+                                <Ionicons name={badge.icon} size={14} color={badge.color} />
                             </View>
-                        )}
+                        </TouchableOpacity>
+                    </View>
 
-                        <View style={[style.badge, badge.style]}>
-                            <Ionicons name={badge.icon} size={12} color={badge.color} />
-                        </View>
-                    </TouchableOpacity>
+                    <Text style={style.userName}>{profileData.name}</Text>
+                    
+                    <View style={[style.rolePill, isAdmin ? style.rolePillAdmin : style.rolePillEmployee]}>
+                        <Text style={[style.roleText, isAdmin ? style.roleTextAdmin : style.roleTextEmployee]}>
+                            {profileData.roleLabel}
+                        </Text>
+                    </View>
                 </View>
 
-                <Text style={style.userName}>{profileData.name}</Text>
-                <View style={[style.rolePill, isAdmin ? style.rolePillAdmin : style.rolePillEmployee]}>
-                    <Text style={[style.roleText, isAdmin ? style.roleTextAdmin : style.roleTextEmployee]}>
-                        ({profileData.roleLabel})
-                    </Text>
-                </View>
-            </View>
+                <View style={style.card}>
+                    <View style={style.cardHeader}>
+                        <Ionicons name="person-outline" size={20} color={colors.primary} />
+                        <Text style={style.cardTitle}>Dados Pessoais</Text>
+                    </View>
 
-            <View style={style.card}>
-                <View style={style.cardHeader}>
-                    <Ionicons name="person-outline" size={18} color={colors.primary} />
-                    <Text style={style.cardTitle}>Minhas Informações</Text>
-                </View>
+                    <Text style={style.label}>NOME COMPLETO</Text>
+                    {isEditing ? (
+                        <TextInput
+                            style={style.input}
+                            value={profileData.name}
+                            onChangeText={(text) => setProfileData({ ...profileData, name: text })}
+                            editable={!loading}
+                            placeholderTextColor="#A0A0A0"
+                        />
+                    ) : (
+                        <Text style={style.infoValueText}>{profileData.name}</Text>
+                    )}
 
-                <Text style={style.label}>NOME COMPLETO</Text>
-                {isEditing ? (
-                    <TextInput
-                        style={style.input}
-                        value={profileData.name}
-                        onChangeText={(text) => setProfileData({ ...profileData, name: text })}
-                    />
-                ) : (
-                    <Text style={style.infoValueText}>{profileData.name}</Text>
-                )}
+                    <View style={style.separatorThin} />
 
-                <View style={style.separatorThin} />
+                    <Text style={style.label}>E-MAIL PROFISSIONAL</Text>
+                    {isEditing ? (
+                        <TextInput
+                            style={style.input}
+                            value={profileData.email}
+                            keyboardType="email-address"
+                            onChangeText={(text) => setProfileData({ ...profileData, email: text })}
+                            editable={!loading}
+                            autoCapitalize="none"
+                            placeholderTextColor="#A0A0A0"
+                        />
+                    ) : (
+                        <Text style={style.infoValueText}>{profileData.email}</Text>
+                    )}
 
-                <Text style={style.label}>E-MAIL PROFISSIONAL</Text>
-                {isEditing ? (
-                    <TextInput
-                        style={style.input}
-                        value={profileData.email}
-                        keyboardType="email-address"
-                        onChangeText={(text) => setProfileData({ ...profileData, email: text })}
-                    />
-                ) : (
-                    <Text style={style.infoValueText}>{profileData.email}</Text>
-                )}
+                    <View style={style.separatorThin} />
 
-                {isAdmin && (
+                    <Text style={style.label}>TELEFONE</Text>
+                    {isEditing ? (
+                        <TextInput
+                            style={style.input}
+                            value={profileData.phone}
+                            keyboardType="phone-pad"
+                            maxLength={15}
+                            onChangeText={(text) => setProfileData({ ...profileData, phone: formatPhoneNumber(text) })}
+                            editable={!loading}
+                            placeholder="(00) 00000-0000"
+                            placeholderTextColor="#A0A0A0"
+                        />
+                    ) : (
+                        <Text style={style.infoValueText}>{profileData.phone || 'Não informado'}</Text>
+                    )}
+
                     <TouchableOpacity
                         style={[style.outlineButton, isEditing ? style.saveButton : { marginTop: 20 }]}
                         onPress={isEditing ? handleSave : () => setIsEditing(true)}
+                        disabled={loading}
                     >
-                        <Text style={isEditing ? style.saveButtonText : style.outlineButtonText}>
-                            {isEditing ? "Salvar" : "Editar informações"}
-                        </Text>
+                        {loading ? (
+                            <ActivityIndicator size="small" color={isEditing ? colors.white : colors.primary} />
+                        ) : (
+                            <Text style={isEditing ? style.saveButtonText : style.outlineButtonText}>
+                                {isEditing ? "Salvar Alterações" : "Editar Informações"}
+                            </Text>
+                        )}
                     </TouchableOpacity>
-                )}
-            </View>
+                </View>
 
-            <View style={style.card}>
-                <View style={style.cardHeader}>
-                    <Ionicons name="lock-closed-outline" size={18} color={colors.primary} />
-                    <Text style={style.cardTitle}>Segurança</Text>
+                <View style={style.card}>
+                    <View style={style.cardHeader}>
+                        <Ionicons name="lock-closed-outline" size={20} color={colors.primary} />
+                        <Text style={style.cardTitle}>Segurança</Text>
+                    </View>
+                    
+                    <Text style={style.label}>SENHA DE ACESSO</Text>
+                    <View style={style.inputFake}>
+                        <Text style={style.inputText}>••••••••••••</Text>
+                    </View>
+                    
+                    <TouchableOpacity style={style.outlineButton} onPress={() => setModalVisible(true)}>
+                        <Text style={style.outlineButtonText}>Recuperar Senha</Text>
+                    </TouchableOpacity>
                 </View>
-                <Text style={style.label}>SENHA</Text>
-                <View style={style.inputFake}>
-                    <Text style={style.inputText}>••••••••••••</Text>
-                </View>
-                <TouchableOpacity style={style.outlineButton}>
-                    <Text style={style.outlineButtonText}>Alterar Senha</Text>
+
+                <TouchableOpacity style={style.logoutButton} onPress={handleLogout} disabled={loading}>
+                    <Ionicons name="log-out-outline" size={20} color={colors.white} style={style.logoutIcon} />
+                    <Text style={style.logoutText}>Sair da Conta</Text>
                 </TouchableOpacity>
-            </View>
+            </ScrollView>
+            <Modal
+                visible={modalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={style.modalOverlay}>
+                    <KeyboardAvoidingView 
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+                        style={style.modalContainer}
+                    >
+                        <View style={style.modalIconContainer}>
+                            <Ionicons name="key-outline" size={32} color={colors.primary} />
+                        </View>
+                        
+                        <Text style={style.modalTitle}>Esqueci minha senha</Text>
+                        <Text style={style.modalSubtitle}>
+                            Enviaremos um link de recuperação seguro para o seu e-mail cadastrado.
+                        </Text>
 
-            <TouchableOpacity style={style.logoutButton} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color={colors.white} style={style.logoutIcon} />
-                <Text style={style.logoutText}>Sair da Conta</Text>
-            </TouchableOpacity>
-        </ScrollView>
+                        <Text style={[style.label, { width: '100%' }]}>SEU E-MAIL</Text>
+                        <TextInput
+                            style={[style.input, { width: '100%', marginBottom: 25 }]}
+                            placeholder="exemplo@email.com"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            placeholderTextColor="#A0A0A0"
+                        />
+
+                        <TouchableOpacity style={style.primaryButton} onPress={handleMockPasswordRecovery}>
+                            <Text style={style.primaryButtonText}>Enviar Link</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={style.cancelModalButton} onPress={() => setModalVisible(false)}>
+                            <Text style={style.cancelModalText}>Cancelar</Text>
+                        </TouchableOpacity>
+                    </KeyboardAvoidingView>
+                </View>
+            </Modal>
+        </View>
     );
 }

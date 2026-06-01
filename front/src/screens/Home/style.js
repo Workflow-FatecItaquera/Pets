@@ -4,8 +4,6 @@ import { COLORS, SIZES } from "../../styles/theme";
 export default StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: COLORS.background,
         padding: 25,
         paddingTop: 45,
@@ -14,7 +12,6 @@ export default StyleSheet.create({
         fontSize: SIZES.fontTitle,
         fontWeight: 'bold',
         color: COLORS.text,
-
     },
     boardadmin: {
         width: '100%',
@@ -25,24 +22,16 @@ export default StyleSheet.create({
         overflow: 'hidden',
         position: 'relative',
     },
-
     yellowGlow: {
         position: 'absolute',
         width: 215,
         height: 240,
         borderRadius: 999,
-
         backgroundColor: COLORS.secondary,
-
         top: -20,
         right: -30,
-
         opacity: 0.20,
-
-        //android
         elevation: 20,
-
-        //iOS - não tirar
         shadowColor: COLORS.secondary,
         shadowOffset: {
             width: -50,
@@ -56,7 +45,6 @@ export default StyleSheet.create({
         fontSize: SIZES.fontSection,
         textTransform: 'uppercase',
         opacity: 0.9,
-        
     },
     name: {
         color: COLORS.white,
@@ -120,15 +108,11 @@ export default StyleSheet.create({
     buttonAppointment: {
         backgroundColor: COLORS.primary,
         borderRadius: 30,
-        color: COLORS.section,
         width: 185,
         alignItems: 'center',
-        textTransform: 'uppercase',
-        fontWeight: 'bold',
     },
     appointment:{
         backgroundColor: COLORS.white,
-        padding: 10,
         borderRadius: 20,
         marginTop: 20,
         padding: 15,
@@ -149,43 +133,43 @@ export default StyleSheet.create({
         color: COLORS.titlesubsection,
     },
     status: {
-        width: '40%',
+        width: '35%',
         color: COLORS.titlesubsection,
         fontSize: SIZES.fontStatus,
         textTransform: 'uppercase',
         fontWeight: 'bold',
         backgroundColor: COLORS.gray,
         textAlign: 'center',
-        padding: 8,
-        paddingLeft: 5,
-        paddingRight: 5,
+        paddingVertical: 8,
+        paddingHorizontal: 5,
         borderRadius: 20,
+        overflow: 'hidden'
     },
     datappointment: {
+        flex: 1,
+        paddingHorizontal: 10,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'start',
-        alignItems: 'start',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
     },
     imagecontainer: {
         width: 45,
-        height: 75,
+        height: 45,
         borderRadius: 15,
-        sizeImage: 'cover',
+        overflow: 'hidden',
     },
     image: {
         width: '100%',
         height: '100%',
-        borderRadius: 20,
-        sizeImage: 'cover',
     },
     iconSection: {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         width: 43,
-        padding: 5,
         height: 45,
+        padding: 5,
         borderRadius: 17,
         backgroundColor: COLORS.iconBackground,
     },
@@ -194,8 +178,8 @@ export default StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         width: 43,
-        padding: 5,
         height: 45,
+        padding: 5,
         borderRadius: 17,
         backgroundColor: COLORS.iconStar
     },
@@ -204,6 +188,6 @@ export default StyleSheet.create({
         color: COLORS.titlesubsection,
         textTransform: 'uppercase',
         paddingTop: 25,
-        paddingBottom: 5,    
+        paddingBottom: 5,  
     },
-})
+});

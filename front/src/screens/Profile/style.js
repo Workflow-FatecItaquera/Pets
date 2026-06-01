@@ -38,7 +38,7 @@ export default StyleSheet.create({
     borderColor: COLORS.primary 
   },
   avatarPlaceholder: {
-    backgroundColor: '#6A0DAD',
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -194,5 +194,74 @@ export default StyleSheet.create({
     color: COLORS.white, 
     fontWeight: 'bold', 
     fontSize: 16 
+  },
+
+  // ==========================================
+  // ESTILOS ADICIONADOS PARA O MODAL (ESQUECI A SENHA)
+  // ==========================================
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fundo escuro semi-transparente
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SIZES.padding,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#E8DEF8', // Cor de fundo suave para combinar com o ícone
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: COLORS.primary,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  primaryButton: {
+    backgroundColor: COLORS.primary,
+    width: '100%',
+    paddingVertical: 14,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  primaryButtonText: {
+    color: COLORS.white,
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  cancelModalButton: {
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelModalText: {
+    color: '#999',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });
