@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, Dimensions, ActivityIndicator, Alert, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS, SIZES } from '../styles/theme';
 import PetForm from '../components/PetForm';
 import PetDropdown from '../components/PetDropdown';
+import { AuthContext } from '../contexts/AuthContext';
 
 const { height } = Dimensions.get('window');
 
@@ -18,7 +19,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
   const [isFetchingPets, setIsFetchingPets] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+  const { userData } = useContext(AuthContext);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -33,6 +34,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
     packageType: 'Avulso',
     services: [], 
     notes: '',
+    userId: userData ? userData._id : null
   });
 
   useEffect(() => {
@@ -129,6 +131,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       estimatedDuration: totals.duration, 
       price: totals.price,
       status: 'AGUARDANDO',
+      userId: userData ? userData._id : null,
       recurrence: {
         type: 'Avulso',
         active: false
@@ -146,7 +149,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       if (!response.ok) throw new Error('Falha ao salvar agendamento');
 
       Alert.alert('Sucesso', 'Agendamento criado!');
-      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '' });
+      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '', userId: userData ? userData._id : null });
       setSearchText('');
       onSaveSuccess();
       onClose();

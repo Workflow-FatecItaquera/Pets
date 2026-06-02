@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Image, View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../styles/theme';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { AuthContext } from '../contexts/AuthContext';
 
 const formatPhone = (value) => {
   if (!value) return '';
@@ -23,11 +24,12 @@ const formatPhone = (value) => {
 export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDeleteSuccess, mode = 'quick', initialData = null }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { userData } = useContext(AuthContext);
   const [form, setForm] = useState({
     petName: '', type: 'Cachorro', breed: '', size: 'M',
     tutorName: '', phone: '',
     temperament: 'Dócil',
-    allergies: '', notes: '', photo: null, existingPhotoUri: null
+    allergies: '', notes: '', photo: null, existingPhotoUri: null, userId: userData ? userData._id : null
   });
 
   const isQuickMode = mode === 'quick';
@@ -47,13 +49,14 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
           allergies: initialData.aestheticPreferences || initialData.allergies || '',
           notes: initialData.notes || '',
           photo: null, 
-          existingPhotoUri: initialData.photo ? `${apiUrl}/pets/${initialData._id}/photo` : null
+          existingPhotoUri: initialData.photo ? `${apiUrl}/pets/${initialData._id}/photo` : null,
+          userId: userData ? userData._id : null
         });
       } else {
         setForm({
           petName: '', type: 'Cachorro', breed: '', size: 'M',
           tutorName: '', phone: '', temperament: 'Dócil',
-          allergies: '', notes: '', photo: null, existingPhotoUri: null
+          allergies: '', notes: '', photo: null, existingPhotoUri: null, userId: userData ? userData._id : null
         });
       }
     }
@@ -102,7 +105,7 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
               const response = await fetch(`${apiUrl}/pets/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: initialData._id })
+                body: JSON.stringify({ id: initialData._id, userId: userData ? userData._id : null })
               });
               
               if (!response.ok) throw new Error('Falha ao excluir o pet no servidor');
@@ -141,7 +144,8 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
         aestheticPreferences: form.allergies,
         notes: form.notes,
         tutorName: form.tutorName,
-        phone: form.phone
+        phone: form.phone,
+        userId: form.userId
       };
 
       if (form.photo) {

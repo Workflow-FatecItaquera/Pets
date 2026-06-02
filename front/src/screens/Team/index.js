@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useContext } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View, Image, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URI } from '@env';
@@ -6,6 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { COLORS } from '../../styles/theme';
 import style from './style';
+
+import { AuthContext } from '../../contexts/AuthContext';
 
 const API_URL = BACKEND_URI;
 
@@ -74,6 +76,8 @@ export default function Team() {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState('all');
+
+  const { userData } = useContext(AuthContext);
   
   // States dos Modais
   const [form, setForm] = useState(INITIAL_FORM);
@@ -149,7 +153,7 @@ export default function Team() {
       const response = await fetch(`${API_URL}/users/active`, {
         method: 'PUT', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: targetId }),
+        body: JSON.stringify({ id: targetId, userId: userData ? userData._id : null }),
       });
 
           if (!response.ok) {
@@ -185,6 +189,7 @@ export default function Team() {
       const bodyData = {
         name: form.name.trim(),
         email: form.email.toLowerCase().trim(),
+        userId: userData ? userData._id : null
       };
 
       if (isEditing) {
@@ -246,9 +251,9 @@ export default function Team() {
 
         <View style={style.filterBar}>
           {[
-            { id: 'all', label: 'TODOS' },
             { id: 'active', label: 'ATIVOS' },
             { id: 'inactive', label: 'INATIVOS' },
+            { id: 'all', label: 'TODOS' }
           ].map((item) => {
             const isSelected = filter === item.id;
             return (
