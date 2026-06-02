@@ -75,7 +75,7 @@ export default function Team() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('active');
 
   const { userData } = useContext(AuthContext);
   
