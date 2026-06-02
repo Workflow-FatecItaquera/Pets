@@ -46,15 +46,13 @@ export default function Pets() {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
       const delayDebounceFn = setTimeout(() => {
       fetchPets(search);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-    }, [search])
-  );
+  }, [search]);
 
   // Função para abrir os detalhes do pet
   const handleOpenDetails = (pet) => {
@@ -72,7 +70,7 @@ export default function Pets() {
           source={{ uri: `${API_URL}/pets/${item._id}/photo` }} 
           style={style.avatar} 
           transition={150}
-          cachePolicy="disk"
+          cachePolicy="none"
         />
       ) : (
         <View style={[style.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0E6FF' }]}>
@@ -129,6 +127,8 @@ export default function Pets() {
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
           renderItem={renderPetCard}
+          refreshing={loading}
+          onRefresh={() => fetchPets(search)}
           ListEmptyComponent={<Text style={style.emptyText}>Nenhum pet encontrado.</Text>}
         />
       )}

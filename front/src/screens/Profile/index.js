@@ -116,7 +116,8 @@ export default function Profile() {
                     name: profileData.name.trim(),
                     email: profileData.email.toLowerCase().trim(),
                     picture: profileData.avatar,
-                    phone: profileData.phone.trim() 
+                    phone: profileData.phone.trim(),
+                    userId: userData ? userData._id : null
                 }),
             });
 

@@ -146,11 +146,9 @@ export default function Finance() {
     }
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchReservations();
-    }, [fetchReservations])
-  );
+  useEffect(() => {
+    fetchReservations();
+  }, [fetchReservations]);
 
   const financialData = useMemo(() => {
     const now = new Date();

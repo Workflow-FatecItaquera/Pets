@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import style from './style';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import ReservaCard from '../../components/ReservaCard';
 import ReservaDetails from '../../components/ReservaDetails';
 import { COLORS } from '../../styles/theme';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const API_URL = BACKEND_URI;
 
@@ -20,7 +21,8 @@ const getLocalDateString = (date = new Date()) => {
 
 export default function Home() {
     const navigation = useNavigation();
-    
+    const { userData } = useContext(AuthContext);
+
     const [todayAppointments, setTodayAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -84,7 +86,7 @@ export default function Home() {
 
     const handleRefresh = () => {
         setRefreshing(true);
-        fetchDashboardData(false);
+        fetchDashboardData();
     };
 
     const handleOpenDetails = (reservation) => {
@@ -115,7 +117,7 @@ export default function Home() {
 
                     <Text style={style.type}>Painel administrativo</Text>
 
-                    <Text style={style.name}>Olá, Administrador</Text>
+                    <Text style={style.name}>Olá, {userData.isAdmin ? 'Administrador' : 'Colaborador'}</Text>
 
                     <Text style={style.text}>
                         Bem-vindo ao centro de comando da Pêlos & Lambeijos.

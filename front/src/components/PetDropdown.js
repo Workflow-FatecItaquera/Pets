@@ -31,7 +31,7 @@ export default function PetDropdown({
                   style={styles.triggerAvatarImage}
                   contentFit="cover"
                   transition={150}
-                  cachePolicy="disk"
+                  cachePolicy="none"
                 />
               ) : (
                 <MaterialCommunityIcons 
@@ -101,7 +101,7 @@ export default function PetDropdown({
                           style={styles.petAvatarImage}
                           contentFit="cover"
                           transition={150}
-                          cachePolicy="disk"
+                          cachePolicy="none"
                         />
                       ) : (
                         <MaterialCommunityIcons 

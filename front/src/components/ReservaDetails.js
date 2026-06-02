@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { COLORS, SIZES } from '../styles/theme';
 import PetForm from '../components/PetForm';
 import PetDropdown from '../components/PetDropdown';
+import { AuthContext } from '../contexts/AuthContext';
 
 const { height } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   const [quickModalVisible, setQuickModalVisible] = useState(false);
 
   const [selectedServices, setSelectedServices] = useState([]);
+  const { userData } = useContext(AuthContext);
 
   const [editForm, setEditForm] = useState({
     pet: null,
@@ -164,7 +166,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
       const response = await fetch(`${apiUrl}/reservations`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO' })
+        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO', userId: userData._id })
       });
 
       if (!response.ok) throw new Error();
@@ -198,6 +200,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
         notes: editForm.notes,
         status: editForm.status,
         startDate: editForm.date.toISOString(),
+        userId: userData._id,
       };
 
       const response = await fetch(`${apiUrl}/reservations`, {
@@ -234,7 +237,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
               const response = await fetch(`${apiUrl}/reservations/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: reservation._id })
+                body: JSON.stringify({ id: reservation._id, userId: userData._id })
               });
               if (!response.ok) throw new Error();
 
@@ -310,7 +313,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                             source={{ uri: `${apiUrl}/pets/${reservation.pet._id}/photo` }}
                             style={styles.petImage}
                             transition={150}
-                            cachePolicy="disk"
+                            cachePolicy="none"
                           />
                         )}
                       </View>
