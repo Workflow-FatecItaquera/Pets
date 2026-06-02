@@ -3,6 +3,8 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import { GridFSBucket, ObjectId } from "mongodb";
+import { Server } from "socket.io";
+import http from "http";
 
 dotenv.config();
 
@@ -14,6 +16,22 @@ import LogController from "./controllers/LogController.js";
 import Tutor from "./models/Tutor.js";
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "DELETE"]
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log(`Cliente conectado: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+        console.log(`Cliente desconectado: ${socket.id}`);
+    });
+});
 
 app.use(cors()); 
 app.use(express.json({limit:"15mb"}));
@@ -39,6 +57,17 @@ mongoose.connect(process.env.MONGODB_URI,{
 .catch((err) => {
         console.error("Erro de conexão MongoDB:", err);
     });
+
+// ROTAS DE LOGS
+
+app.get("/logs", async (req, res) => {
+    try {
+        const logs = await LogController.findAll();
+        res.json(logs);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ROTAS DE USUÁRIO
 
@@ -66,6 +95,8 @@ app.get("/users", async (req, res) => {
 app.post("/users", async (req, res) => {
     try {
         const user = await UserController.createUser(req.body);
+        const log = await LogController.create(req.body._id, "create/user", `Usuário ${user.name} criado`);
+
         res.status(201).json(user);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -75,6 +106,8 @@ app.post("/users", async (req, res) => {
 app.post("/users/login", async (req, res) => {
     try {
         const user = await UserController.login(req.body);
+        const log = await LogController.create(user._id, "login", `Usuário ${user.name} logado`);
+
         res.json(user);
     } catch (err) {
         res.status(401).json({ error: err.message });
@@ -84,6 +117,8 @@ app.post("/users/login", async (req, res) => {
 app.put("/users", async (req, res) => {
     try {
         const user = await UserController.update(req.body);
+        const log = await LogController.create(req.body._id, "update/user", `Usuário ${user.name} atualizado`);
+
         res.json(user);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -93,6 +128,8 @@ app.put("/users", async (req, res) => {
 app.put("/users/active", async (req, res) => {
     try {
         const user = await UserController.activeToggle(req.body.id);
+        const log = await LogController.create(req.body._id, "toggle/user", `Usuário ${user.name} ${user.active ? "ativado" : "desativado"}`);
+
         res.json(user);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -102,18 +139,11 @@ app.put("/users/active", async (req, res) => {
 app.put("/users/admin", async (req, res) => {
     try {
         const user = await UserController.adminToggle(req.body.id);
+        const log = await LogController.create(req.body._id, "admin/user", `Usuário ${user.name} ${user.admin ? "tornou-se admin" : "teve privilégios de admin revogados"}`);
+
         res.json(user);
     } catch (err) {
         res.status(400).json({ error: err.message });
-    }
-});
-
-app.delete("/users/clear", async (req, res) => {
-    try {
-        const response = UserController.clearAll()
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({error:error.message});
     }
 });
 
@@ -152,15 +182,6 @@ app.put("/tutors/active", async (req, res) => {
         res.json(tutor);
     } catch (err) {
         res.status(400).json({ error: err.message });
-    }
-});
-
-app.delete("/tutors/clear", async (req, res) => {
-    try {
-        const response = TutorController.clearAll();
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({error:error.message});
     }
 });
 
@@ -253,6 +274,8 @@ app.post("/pets/quick-create", async (req, res) => {
         ...req.body,
       photo: photoId
     });
+    const log = await LogController.create(req.body._id, "create/pet", `Pet ${pet.name} criado`);
+    io.emit("log", log);
 
     res.status(201).json(pet);
   } catch (err) {
@@ -316,6 +339,9 @@ app.put("/pets", async (req, res) =>{
         } else {
             delete req.body.photo;
             pet = await PetController.update(req.body);
+            const log = await LogController.create(req.body._id, "update/pet", `Pet ${pet.name} atualizado`);
+            io.emit("log", log);
+
         }
         
 
@@ -329,18 +355,11 @@ app.put("/pets", async (req, res) =>{
 app.put("/pets/active", async (req, res) => {
     try {
         const pet = await PetController.activeToggle(req.body.id);
+        const log = await LogController.create(req.body._id, "toggle/pet", `Cadastro do pet ${pet.name} ${pet.active ? "ativado" : "desativado"}`);
+
         res.json(pet);
     } catch (err) {
         res.status(400).json({ error: err.message });
-    }
-});
-
-app.delete("/pets/clear", async (req, res) => {
-    try {
-        const response = PetController.clearAll();
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({error:error.message});
     }
 });
 
@@ -358,6 +377,9 @@ app.get("/reservations", async (req, res) => {
 app.post("/reservations", async (req, res) => {
     try {
         const reservation = await ReservationController.insertOne(req.body);
+        const log = await LogController.create(req.body._id, "create/reservation", `Reserva ${reservation.title} criada`);
+        io.emit("log", log);
+
         res.status(201).json(reservation);
     } catch (err) {
         console.error(err);
@@ -368,6 +390,8 @@ app.post("/reservations", async (req, res) => {
 app.put("/reservations", async (req, res) => {
     try {
         const reservation = await ReservationController.update(req.body);
+        const log = await LogController.create(req.body._id, "update/reservation", `Reserva ${reservation.title} atualizada`);
+        io.emit("log", log);
         res.json(reservation);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -377,18 +401,11 @@ app.put("/reservations", async (req, res) => {
 app.put("/reservations/active", async (req, res) => {
     try {
         const reservation = await ReservationController.activeToggle(req.body.id);
+        const log = await LogController.create(req.body._id, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
+        io.emit("log", log);
         res.json(reservation);
     } catch (err) {
         res.status(400).json({ error: err.message });
-    }
-});
-
-app.delete("/reservations/clear", async (req, res) => {
-    try {
-        const response = ReservationController.clearAll()
-        res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({error:error.message});
     }
 });
 

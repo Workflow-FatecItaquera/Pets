@@ -99,15 +99,6 @@ class UserController {
             throw err;
         }
     }
-
-    static async clearAll(){
-        try {
-            User.deleteMany({});
-            return "Limpeza concluída";
-        } catch (error) {
-            return "Houve um erro";
-        }
-    }
 }
 
 export default UserController;

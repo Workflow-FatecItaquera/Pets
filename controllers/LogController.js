@@ -14,13 +14,13 @@ class LogController {
         return await Log.find({ user: userId }).populate("user", "name email picture");
     }
 
-    static async create(userId, action){
+    static async create(userId, action, message){
         await Database.getConnection();
         const user = await User.findById(userId);
         if(!user){
             throw new Error("User not found");
         }
-        const log = new Log({ user: userId, action });
+        const log = new Log({ user: userId, action, message });
         return await log.save();
     }
 
