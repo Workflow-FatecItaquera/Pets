@@ -199,7 +199,7 @@ export default function PetForm({ visible, onClose, apiUrl, onSaveSuccess, onDel
               <View style={styles.fieldContainer}>
                 <TouchableOpacity style={styles.photoUpload} onPress={pickImage}>
                   {form.photo ? (
-                    <Image source={{ uri: `${form.photo}` }} style={styles.petPhoto} />
+                    <Image source={{ uri: form.photo }} style={styles.petPhoto} />
                   ) : form.existingPhotoUri ? (
                     <Image source={{ uri: form.existingPhotoUri }} style={styles.petPhoto} />
                   ) : (

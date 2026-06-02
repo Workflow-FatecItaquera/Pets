@@ -70,7 +70,7 @@ export default function Pets() {
           source={{ uri: `${API_URL}/pets/${item._id}/photo` }} 
           style={style.avatar} 
           transition={150}
-          cachePolicy="disk"
+          cachePolicy="none"
         />
       ) : (
         <View style={[style.avatar, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#F0E6FF' }]}>
