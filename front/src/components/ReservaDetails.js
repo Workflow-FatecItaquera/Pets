@@ -237,7 +237,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
               const response = await fetch(`${apiUrl}/reservations/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: reservation._id, userId: userData._id })
+                body: JSON.stringify({ _id: reservation._id, userId: userData._id })
               });
               if (!response.ok) throw new Error();
 
