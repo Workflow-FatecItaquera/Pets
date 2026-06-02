@@ -390,11 +390,10 @@ app.post("/reservations", async (req, res) => {
 });
 
 app.put("/reservations", async (req, res) => {
-    console.log(JSON.stringify(req.body));
+    const userId = req.body.userId;
     try {
         const reservation = await ReservationController.update(req.body);
-        console.log(req.body.userId);
-        const log = await LogController.create(req.body.userId, "update/reservation", `Reserva ${reservation.title} atualizada`);
+        const log = await LogController.create(userId, "update/reservation", `Reserva ${reservation.title} atualizada`);
         io.emit("log", log);
         res.json(reservation);
     } catch (err) {
@@ -403,10 +402,10 @@ app.put("/reservations", async (req, res) => {
 });
 
 app.put("/reservations/active", async (req, res) => {
-    console.log(JSON.stringify(req.body));
+    const userId = req.body.userId;
     try {
         const reservation = await ReservationController.activeToggle(req.body._id);
-        const log = await LogController.create(req.body.userId, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
+        const log = await LogController.create(userId, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
         io.emit("log", log);
         res.json(reservation);
     } catch (err) {
