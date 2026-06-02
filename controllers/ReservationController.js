@@ -29,12 +29,14 @@ class ReservationController {
     }
 
     static async update(data) {
+        let reservation = data;
+        delete reservation.userId;
         try {
             await Database.getConnection();
 
             const reservation = await Reservation.findByIdAndUpdate(
                 data._id,
-                { $set: data },
+                { $set: reservation },
                 { new: true }
             );
 
