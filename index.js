@@ -390,6 +390,7 @@ app.post("/reservations", async (req, res) => {
 });
 
 app.put("/reservations", async (req, res) => {
+    console.log(JSON.stringify(req.body));
     try {
         const reservation = await ReservationController.update(req.body);
         const log = await LogController.create(req.body.userId, "update/reservation", `Reserva ${reservation.title} atualizada`);
@@ -401,6 +402,7 @@ app.put("/reservations", async (req, res) => {
 });
 
 app.put("/reservations/active", async (req, res) => {
+    console.log(JSON.stringify(req.body));
     try {
         const reservation = await ReservationController.activeToggle(req.body.id);
         const log = await LogController.create(req.body.userId, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);

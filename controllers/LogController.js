@@ -16,7 +16,6 @@ class LogController {
 
     static async create(userId, action, message){
         await Database.getConnection();
-        console.log(userId);
         const user = await User.findById(userId);
         if(!user){
             throw new Error("User not found");
