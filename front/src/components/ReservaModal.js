@@ -34,7 +34,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
     packageType: 'Avulso',
     services: [], 
     notes: '',
-    userId: userData ? userData._id : null
+    userId: userData._id
   });
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       estimatedDuration: totals.duration, 
       price: totals.price,
       status: 'AGUARDANDO',
-      userId: userData ? userData._id : null,
+      userId: userData._id,
       recurrence: {
         type: 'Avulso',
         active: false
@@ -146,10 +146,10 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error('Falha ao salvar agendamento');
+      if (!response) throw new Error('Falha ao salvar agendamento');
 
       Alert.alert('Sucesso', 'Agendamento criado!');
-      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '', userId: userData ? userData._id : null });
+      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '', userId: userData._id });
       setSearchText('');
       onSaveSuccess();
       onClose();
