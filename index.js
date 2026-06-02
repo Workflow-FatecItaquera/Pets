@@ -336,6 +336,8 @@ app.put("/pets", async (req, res) =>{
                 ...req.body,
                 photo: photoId
             });
+            const log = await LogController.create(req.body.userId, "update/pet", `Pet ${pet.name} atualizado`);
+            io.emit("log", log);
         } else {
             delete req.body.photo;
             pet = await PetController.update(req.body);
@@ -356,7 +358,7 @@ app.put("/pets/active", async (req, res) => {
     try {
         const pet = await PetController.activeToggle(req.body.id);
         const log = await LogController.create(req.body.userId, "toggle/pet", `Cadastro do pet ${pet.name} ${pet.active ? "ativado" : "desativado"}`);
-
+        io.emit("log", log);
         res.json(pet);
     } catch (err) {
         res.status(400).json({ error: err.message });
