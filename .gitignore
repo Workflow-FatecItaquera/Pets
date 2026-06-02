@@ -10,6 +10,7 @@ front/expo-env.d.ts
 # Back-end 
 back/.env
 .env
+config/firebase-key.json
 
 # Native 
 front/ios/
