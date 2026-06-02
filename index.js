@@ -393,6 +393,7 @@ app.put("/reservations", async (req, res) => {
     console.log(JSON.stringify(req.body));
     try {
         const reservation = await ReservationController.update(req.body);
+        console.log(req.body.userId);
         const log = await LogController.create(req.body.userId, "update/reservation", `Reserva ${reservation.title} atualizada`);
         io.emit("log", log);
         res.json(reservation);
