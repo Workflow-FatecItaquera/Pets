@@ -46,15 +46,13 @@ export default function Pets() {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
+  useEffect(() => {
       const delayDebounceFn = setTimeout(() => {
       fetchPets(search);
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-    }, [search])
-  );
+  }, [search]);
 
   // Função para abrir os detalhes do pet
   const handleOpenDetails = (pet) => {
@@ -129,6 +127,8 @@ export default function Pets() {
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
           renderItem={renderPetCard}
+          refreshing={loading}
+          onRefresh={() => fetchPets(search)}
           ListEmptyComponent={<Text style={style.emptyText}>Nenhum pet encontrado.</Text>}
         />
       )}

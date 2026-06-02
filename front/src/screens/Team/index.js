@@ -102,11 +102,9 @@ export default function Team() {
     }
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchMembers();
-    }, [fetchMembers])
-  );
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
   const activeMembers = useMemo(() => {
     return members.filter((member) => member.isActive !== false);

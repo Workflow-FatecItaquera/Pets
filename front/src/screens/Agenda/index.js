@@ -58,12 +58,14 @@ export default function Agenda() {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      generateWeekDays(new Date());
+  useEffect(() => {
+    generateWeekDays(new Date());
       fetchReservations();
-    }, [])
-  );
+  }, []);
+
+  const handleRefresh = () => {
+    fetchReservations();
+  };
 
   const generateWeekDays = (baseDate) => {
     const days = [];
@@ -174,6 +176,8 @@ export default function Agenda() {
           keyExtractor={(item) => item._id || Math.random().toString()}
           contentContainerStyle={style.listContainer}
           showsVerticalScrollIndicator={false}
+          refreshing={loading}
+          onRefresh={handleRefresh}
           renderItem={({ item }) => (
             <ReservationCard 
               data={item} 
