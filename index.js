@@ -95,7 +95,7 @@ app.get("/users", async (req, res) => {
 app.post("/users", async (req, res) => {
     try {
         const user = await UserController.createUser(req.body);
-        const log = await LogController.create(req.body._id, "create/user", `Usuário ${user.name} criado`);
+        const log = await LogController.create(req.body.userId, "create/user", `Usuário ${user.name} criado`);
 
         res.status(201).json(user);
     } catch (err) {
@@ -117,7 +117,7 @@ app.post("/users/login", async (req, res) => {
 app.put("/users", async (req, res) => {
     try {
         const user = await UserController.update(req.body);
-        const log = await LogController.create(req.body._id, "update/user", `Usuário ${user.name} atualizado`);
+        const log = await LogController.create(req.body.userId, "update/user", `Usuário ${user.name} atualizado`);
 
         res.json(user);
     } catch (err) {
@@ -128,7 +128,7 @@ app.put("/users", async (req, res) => {
 app.put("/users/active", async (req, res) => {
     try {
         const user = await UserController.activeToggle(req.body.id);
-        const log = await LogController.create(req.body._id, "toggle/user", `Usuário ${user.name} ${user.active ? "ativado" : "desativado"}`);
+        const log = await LogController.create(req.body.userId, "toggle/user", `Usuário ${user.name} ${user.active ? "ativado" : "desativado"}`);
 
         res.json(user);
     } catch (err) {
@@ -139,7 +139,7 @@ app.put("/users/active", async (req, res) => {
 app.put("/users/admin", async (req, res) => {
     try {
         const user = await UserController.adminToggle(req.body.id);
-        const log = await LogController.create(req.body._id, "admin/user", `Usuário ${user.name} ${user.admin ? "tornou-se admin" : "teve privilégios de admin revogados"}`);
+        const log = await LogController.create(req.body.userId, "admin/user", `Usuário ${user.name} ${user.admin ? "tornou-se admin" : "teve privilégios de admin revogados"}`);
 
         res.json(user);
     } catch (err) {
@@ -274,7 +274,7 @@ app.post("/pets/quick-create", async (req, res) => {
         ...req.body,
       photo: photoId
     });
-    const log = await LogController.create(req.body._id, "create/pet", `Pet ${pet.name} criado`);
+    const log = await LogController.create(req.body.userId, "create/pet", `Pet ${pet.name} criado`);
     io.emit("log", log);
 
     res.status(201).json(pet);
@@ -339,7 +339,7 @@ app.put("/pets", async (req, res) =>{
         } else {
             delete req.body.photo;
             pet = await PetController.update(req.body);
-            const log = await LogController.create(req.body._id, "update/pet", `Pet ${pet.name} atualizado`);
+            const log = await LogController.create(req.body.userId, "update/pet", `Pet ${pet.name} atualizado`);
             io.emit("log", log);
 
         }
@@ -355,7 +355,7 @@ app.put("/pets", async (req, res) =>{
 app.put("/pets/active", async (req, res) => {
     try {
         const pet = await PetController.activeToggle(req.body.id);
-        const log = await LogController.create(req.body._id, "toggle/pet", `Cadastro do pet ${pet.name} ${pet.active ? "ativado" : "desativado"}`);
+        const log = await LogController.create(req.body.userId, "toggle/pet", `Cadastro do pet ${pet.name} ${pet.active ? "ativado" : "desativado"}`);
 
         res.json(pet);
     } catch (err) {
@@ -377,7 +377,7 @@ app.get("/reservations", async (req, res) => {
 app.post("/reservations", async (req, res) => {
     try {
         const reservation = await ReservationController.insertOne(req.body);
-        const log = await LogController.create(req.body._id, "create/reservation", `Reserva ${reservation.title} criada`);
+        const log = await LogController.create(req.body.userId, "create/reservation", `Reserva ${reservation.title} criada`);
         io.emit("log", log);
 
         res.status(201).json(reservation);
@@ -390,7 +390,7 @@ app.post("/reservations", async (req, res) => {
 app.put("/reservations", async (req, res) => {
     try {
         const reservation = await ReservationController.update(req.body);
-        const log = await LogController.create(req.body._id, "update/reservation", `Reserva ${reservation.title} atualizada`);
+        const log = await LogController.create(req.body.userId, "update/reservation", `Reserva ${reservation.title} atualizada`);
         io.emit("log", log);
         res.json(reservation);
     } catch (err) {
@@ -401,7 +401,7 @@ app.put("/reservations", async (req, res) => {
 app.put("/reservations/active", async (req, res) => {
     try {
         const reservation = await ReservationController.activeToggle(req.body.id);
-        const log = await LogController.create(req.body._id, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
+        const log = await LogController.create(req.body.userId, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
         io.emit("log", log);
         res.json(reservation);
     } catch (err) {
