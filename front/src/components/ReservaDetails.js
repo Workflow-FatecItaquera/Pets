@@ -17,7 +17,6 @@ const SERVICE_CATALOG = [
 ];
 
 export default function ReservaDetails({ visible, onClose, reservation, apiUrl, onSaveSuccess }) {
-  if (!reservation) return null;
 
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -81,6 +80,8 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   useEffect(() => {
     if (isEditing && showPetDropdown) fetchPets(debouncedSearch);
   }, [debouncedSearch]);
+
+  if (!reservation) return null;
 
   const fetchPets = async (query = '') => {
     try {
@@ -671,7 +672,7 @@ const styles = StyleSheet.create({
 
   petHeroCard: { backgroundColor: COLORS.primary, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 24, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
   avatarContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', flexShrink: 0 },
-  petImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  petImage: { width: '100%', height: '100%', contentFit: 'cover' },
   petMeta: { flex: 1, marginLeft: 16, marginRight: 8 },
   petNameText: { fontSize: 20, fontWeight: '700', color: '#FFF' },
   tutorNameText: { fontSize: 13, color: '#E2E8F0', marginTop: 2 },
