@@ -404,7 +404,7 @@ app.put("/reservations", async (req, res) => {
 app.put("/reservations/active", async (req, res) => {
     console.log(JSON.stringify(req.body));
     try {
-        const reservation = await ReservationController.activeToggle(req.body.id);
+        const reservation = await ReservationController.activeToggle(req.body._id);
         const log = await LogController.create(req.body.userId, "toggle/reservation", `Reserva ${reservation.title} ${reservation.active ? "ativada" : "desativada"}`);
         io.emit("log", log);
         res.json(reservation);
