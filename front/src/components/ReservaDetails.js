@@ -166,7 +166,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
       const response = await fetch(`${apiUrl}/reservations`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO', userId: userData ? userData._id : null })
+        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO', userId: userData._id })
       });
 
       if (!response.ok) throw new Error();
@@ -200,7 +200,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
         notes: editForm.notes,
         status: editForm.status,
         startDate: editForm.date.toISOString(),
-        userId: userData ? userData._id : null,
+        userId: userData._id,
       };
 
       const response = await fetch(`${apiUrl}/reservations`, {
@@ -237,7 +237,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
               const response = await fetch(`${apiUrl}/reservations/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: reservation._id, userId: userData ? userData._id : null })
+                body: JSON.stringify({ id: reservation._id, userId: userData._id })
               });
               if (!response.ok) throw new Error();
 
