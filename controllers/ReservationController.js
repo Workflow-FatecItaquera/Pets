@@ -24,10 +24,67 @@ class ReservationController {
     static async insertOne(data) {
         await Database.getConnection();
 
-        const reservation = new Reservation({
-            ...data,
-            active: true
+        const start = new Date(data.startDate);
+
+        const end = new Date(start);
+        end.setMinutes(
+            end.getMinutes() +
+            (data.estimatedDuration || 0)
+        );
+
+        const overlap = await Reservation.findOne({
+            active: true,
+
+            user: data.user,
+
+            status: {
+                $nin: [
+                    "CONCLUIDO"
+                ]
+            },
+
+            $expr: {
+                $and: [
+                    {
+                        $lt: [
+                            "$startDate",
+                            end
+                        ]
+                    },
+
+                    {
+                        $gt: [
+                            {
+                                $dateAdd: {
+                                    startDate:
+                                        "$startDate",
+
+                                    unit:
+                                        "minute",
+
+                                    amount:
+                                        "$estimatedDuration"
+                                }
+                            },
+
+                            start
+                        ]
+                    }
+                ]
+            }
         });
+
+        if (overlap) {
+            throw new Error(
+                "Este usuário já possui um agendamento nesse horário."
+            );
+        }
+
+        const reservation =
+            new Reservation({
+                ...data,
+                active: true
+            });
 
         return reservation.save();
     }
