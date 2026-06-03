@@ -161,6 +161,10 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   const statusConfig = getStatusStyle(isEditing ? editForm.status : reservation.status);
   const displayServices = reservation.title ? reservation.title.split(',').map(s => s.trim()) : ['Serviço Geral'];
 
+  const responsibleName =
+  reservation?.user?.name ||
+  'Não atribuído';
+
   const handleMarkAsCompleted = async () => {
     try {
       setLoadingAction(true);
@@ -323,8 +327,20 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                         <Text style={styles.petNameText} numberOfLines={1} ellipsizeMode="tail">
                           {reservation.petName || reservation.pet?.name || 'Não informado'}
                         </Text>
-                        <Text style={styles.tutorNameText} numberOfLines={1} ellipsizeMode="tail">
+                        <Text
+                          style={styles.tutorNameText}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
                           Tutor: {reservation.tutorName || reservation.pet?.tutor?.name || 'Não cadastrado'}
+                        </Text>
+
+                        <Text
+                          style={styles.responsibleText}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          Responsável: {responsibleName}
                         </Text>
                       </View>
 
@@ -676,6 +692,7 @@ const styles = StyleSheet.create({
   petMeta: { flex: 1, marginLeft: 16, marginRight: 8 },
   petNameText: { fontSize: 20, fontWeight: '700', color: '#FFF' },
   tutorNameText: { fontSize: 13, color: '#E2E8F0', marginTop: 2 },
+  responsibleText: { fontSize: 13, color: '#CBD5E1', marginTop: 4 },
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 30, maxWidth: 110, flexShrink: 1 },
   statusText: { fontSize: 12, fontWeight: '700', marginLeft: 4, flexShrink: 1 },
 

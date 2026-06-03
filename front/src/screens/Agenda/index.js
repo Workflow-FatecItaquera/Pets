@@ -32,7 +32,7 @@ const getLocalDateString = (date = new Date()) => {
 export default function Agenda() {
   const { userData } = useContext(AuthContext);
   const userId = userData?._id;
-  const isAdmin = userData?.role === 'admin';
+  const isAdmin = userData?.isAdmin;
 
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [showFullCalendar, setShowFullCalendar] = useState(false);

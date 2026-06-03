@@ -23,7 +23,7 @@ export default function Home() {
     const navigation = useNavigation();
     const { userData } = useContext(AuthContext);
     const userId = userData?._id;
-    const isAdmin = userData?.role === 'admin';
+    const isAdmin = userData?.isAdmin;
     
     const [todayAppointments, setTodayAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -63,8 +63,9 @@ export default function Home() {
             });
 
             const totalRevenue = filteredMonth.reduce((acc, curr) => {
-                const isCancelled = curr.status?.toLowerCase().trim() === 'cancelado';
-                if (isCancelled) return acc;
+                const isCompleted =
+                curr.status?.toUpperCase().trim() === 'CONCLUIDO';
+                if (!isCompleted) return acc;
                 return acc + (curr.price || curr.value || 0);
             }, 0);
 
