@@ -12,6 +12,7 @@ class ReservationController {
         }
 
         return Reservation.find(query)
+        .populate("user")
         .populate({
             path: "pet",
             populate: {
