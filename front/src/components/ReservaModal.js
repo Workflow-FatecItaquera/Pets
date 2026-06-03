@@ -22,7 +22,6 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
   const [isFetchingPets, setIsFetchingPets] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { userData } = useContext(AuthContext);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
