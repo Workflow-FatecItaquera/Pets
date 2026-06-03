@@ -181,7 +181,7 @@ export default function Profile() {
                             onPress={handleImagePicker}
                         >
                             {profileData.avatar ? (
-                                <Image source={{ uri: profileData.avatar }} style={style.avatar} />
+                                <Image source={{ uri: profileData.avatar }} cachePolicy="none" style={style.avatar} />
                             ) : (
                                 <View style={[style.avatar, style.avatarPlaceholder]}>
                                     <Ionicons name="person" size={45} color={colors.white} />
