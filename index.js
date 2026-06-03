@@ -95,7 +95,7 @@ app.get("/users", async (req, res) => {
 app.post("/users", async (req, res) => {
     try {
         const user = await UserController.createUser(req.body);
-        const log = await LogController.create(req.body.userId, "create/user", `Usuário ${user.name} criado`);
+        const log = await LogController.create(user._id, "create/user", `Usuário ${user.name} criado`);
 
         res.status(201).json(user);
     } catch (err) {
