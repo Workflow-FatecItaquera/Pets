@@ -13,6 +13,7 @@ import PetController from "./controllers/PetController.js";
 import ReservationController from "./controllers/ReservationController.js";
 import TutorController from "./controllers/TutorController.js";
 import LogController from "./controllers/LogController.js";
+import ServiceController from "./controllers/ServiceController.js";
 import Tutor from "./models/Tutor.js";
 
 const app = express();
@@ -44,7 +45,6 @@ mongoose.connect(process.env.MONGODB_URI,{
   .then(() => {
     console.log("Conectado ao MongoDB Atlas");
 
-    
     const client = mongoose.connection.getClient();
     const db = client.db("pets"); 
     bucket = new GridFSBucket(db, { bucketName: "photos" });
@@ -214,7 +214,6 @@ app.get("/pets/:id/photo", async (req, res) => {
 
     const photoId = new ObjectId(pet.photo);
 
-    // Buscar metadados do arquivo antes de abrir o stream
     const files = await bucket.find({ _id: photoId }).toArray();
     if (!files || files.length === 0) {
       return res.status(404).send("Arquivo não encontrado no GridFS");
@@ -239,8 +238,7 @@ app.get("/pets/:id/photo", async (req, res) => {
 
 app.post("/pets/quick-create", async (req, res) => {
   try {
-    let { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
-
+    let { petName, photo } = req.body;
     let photoId = null;
 
     if (photo) {
@@ -250,30 +248,23 @@ app.post("/pets/quick-create", async (req, res) => {
         if (photo.startsWith("data:image")) {
             mimeType = photo.substring(photo.indexOf(":") + 1, photo.indexOf(";"));
             extension = mimeType.split("/")[1];
-            
             photo = photo.split(",")[1];
         }
 
         const buffer = Buffer.from(photo, "base64");
-
-        const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, {
-            contentType: mimeType,
-        });
+        const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, { contentType: mimeType });
         uploadStream.end(buffer);
 
         await new Promise((resolve, reject) => {
-            uploadStream.on("finish", (file) => {
-            photoId = uploadStream.id;
-            resolve();
+            uploadStream.on("finish", () => {
+                photoId = uploadStream.id;
+                resolve();
             });
             uploadStream.on("error", reject);
         });
     }
 
-    const pet = await PetController.quickCreate({
-        ...req.body,
-      photo: photoId
-    });
+    const pet = await PetController.quickCreate({ ...req.body, photo: photoId });
     const log = await LogController.create(req.body.userId, "create/pet", `Pet ${pet.name} criado`);
     io.emit("log", log);
 
@@ -287,8 +278,7 @@ app.post("/pets/quick-create", async (req, res) => {
 app.put("/pets", async (req, res) =>{
     let pet;
     try {
-        let { petName, tutorName, type, breed, size, temperament, allergies, phone, photo } = req.body;
-        
+        let { petName, photo } = req.body;
         const petAtual = await PetController.findById(req.body._id);
         if (!petAtual) {
             return res.status(404).json({ error: "Pet não encontrado" });
@@ -297,7 +287,6 @@ app.put("/pets", async (req, res) =>{
         let photoId = petAtual.photo;
 
         if (photo) {
-
             if (petAtual.photo) {
                 try {
                     await bucket.delete(new ObjectId(petAtual.photo));
@@ -313,40 +302,29 @@ app.put("/pets", async (req, res) =>{
             if (photo.startsWith("data:image")) {
                 mimeType = photo.substring(photo.indexOf(":") + 1, photo.indexOf(";"));
                 extension = mimeType.split("/")[1];
-                
                 photo = photo.split(",")[1];
             }
 
             const buffer = Buffer.from(photo, "base64");
-
-            const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, {
-                contentType: mimeType,
-            });
+            const uploadStream = bucket.openUploadStream(`${petName}-photo.${extension}`, { contentType: mimeType });
             uploadStream.end(buffer);
 
             await new Promise((resolve, reject) => {
-                uploadStream.on("finish", (file) => {
-                photoId = uploadStream.id;
-                resolve();
+                uploadStream.on("finish", () => {
+                    photoId = uploadStream.id;
+                    resolve();
                 });
                 uploadStream.on("error", reject);
             });
 
-            pet = await PetController.update({
-                ...req.body,
-                photo: photoId
-            });
-            const log = await LogController.create(req.body.userId, "update/pet", `Pet ${pet.name} atualizado`);
-            io.emit("log", log);
+            pet = await PetController.update({ ...req.body, photo: photoId });
         } else {
             delete req.body.photo;
             pet = await PetController.update(req.body);
-            const log = await LogController.create(req.body.userId, "update/pet", `Pet ${pet.name} atualizado`);
-            io.emit("log", log);
-
         }
-        
 
+        const log = await LogController.create(req.body.userId, "update/pet", `Pet ${pet.name} atualizado`);
+        io.emit("log", log);
         res.status(201).json(pet);
     } catch (err) {
         console.error(err.message);
@@ -365,11 +343,57 @@ app.put("/pets/active", async (req, res) => {
     }
 });
 
+// ROTAS DE SERVIÇOS
+
+app.get("/services", async (req, res) => {
+    try {
+        const services = await ServiceController.findAll();
+        res.json(services);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post("/services", async (req, res) => {
+    try {
+        const service = await ServiceController.insertOne(req.body);
+        const log = await LogController.create(req.body.userId, "create/service", `Serviço ${service.name} criado`);
+        io.emit("log", log);
+        res.status(201).json(service);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.put("/services", async (req, res) => {
+    try {
+        const service = await ServiceController.update(req.body);
+        const log = await LogController.create(req.body.userId, "update/service", `Serviço ${service.name} atualizado`);
+        io.emit("log", log);
+        res.json(service);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+app.put("/services/active", async (req, res) => {
+    try {
+        const service = await ServiceController.activeToggle(req.body.id);
+        const log = await LogController.create(req.body.userId, "toggle/service", `Serviço ${service.name} ${service.isActive ? "ativado" : "desativado"}`);
+        io.emit("log", log);
+        res.json(service);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
 // ROTAS DE RESERVAS
 
 app.get("/reservations", async (req, res) => {
     try {
-        const reservations = await ReservationController.findAll();
+        const { userId, isAdmin } = req.query;
+        const isUserAdmin = isAdmin === "true";
+        const reservations = await ReservationController.findAll(userId, isUserAdmin);
         res.json(reservations);
     } catch (err) {
         res.status(500).json({ error: err.message });
