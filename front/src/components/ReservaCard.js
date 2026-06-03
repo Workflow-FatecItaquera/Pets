@@ -18,16 +18,34 @@ export default function ReservaCard({ data, onPress }) {
     : '--:--';
 
   const petName = data?.pet?.name || data?.petName || 'Pet desconhecido';
-  const tutorName = data?.pet?.tutor?.name || data?.tutorName || 'Tutor não informado';
+
+  const tutorName =
+    data?.pet?.tutor?.name ||
+    data?.tutorName ||
+    'Tutor não informado';
+
+  const responsibleName =
+    data?.user?.name ||
+    'Não atribuído';
+
   const statusLabel = data?.status || 'AGUARDANDO';
 
-  const petType = (data?.pet?.type || data?.petType || '').toLowerCase().trim();
+  const petType = (data?.pet?.type || data?.petType || '')
+    .toLowerCase()
+    .trim();
+
   const petIconName = petType === 'gato' ? 'cat' : 'dog';
 
   const petId = data?.pet?._id;
-  
-  const rawPhoto = petId ? `${API_URL}/pets/${petId}/photo` : data?.pet?.photo;
-  const petPhotoUrl = typeof rawPhoto === 'string' && rawPhoto.trim().length > 0 ? rawPhoto : null;
+
+  const rawPhoto = petId
+    ? `${API_URL}/pets/${petId}/photo`
+    : data?.pet?.photo;
+
+  const petPhotoUrl =
+    typeof rawPhoto === 'string' && rawPhoto.trim().length > 0
+      ? rawPhoto
+      : null;
 
   useEffect(() => {
     setIsImageLoaded(false);
@@ -41,16 +59,34 @@ export default function ReservaCard({ data, onPress }) {
     const normalized = status?.toLowerCase().trim();
 
     if (['concluído', 'concluido', 'pago'].includes(normalized)) {
-      return { bg: '#EAF7EF', text: '#2E8B57', bar: '#3AA76D' };
-    }
-    if (['aguardando', 'agendado'].includes(normalized)) {
-      return { bg: '#FFF7E8', text: '#B7791F', bar: '#D69E2E' };
-    }
-    if (normalized === 'cancelado') {
-      return { bg: '#FDEEEF', text: '#B85063', bar: '#D16A7B' };
+      return {
+        bg: '#EAF7EF',
+        text: '#2E8B57',
+        bar: '#3AA76D',
+      };
     }
 
-    return { bg: '#F3F4F6', text: COLORS.text, bar: '#7C3AED' };
+    if (['aguardando', 'agendado'].includes(normalized)) {
+      return {
+        bg: '#FFF7E8',
+        text: '#B7791F',
+        bar: '#D69E2E',
+      };
+    }
+
+    if (normalized === 'cancelado') {
+      return {
+        bg: '#FDEEEF',
+        text: '#B85063',
+        bar: '#D16A7B',
+      };
+    }
+
+    return {
+      bg: '#F3F4F6',
+      text: COLORS.text,
+      bar: '#7C3AED',
+    };
   };
 
   const theme = getStatusTheme(statusLabel);
@@ -63,12 +99,16 @@ export default function ReservaCard({ data, onPress }) {
         pressed && styles.cardPressed,
       ]}
     >
-      <View style={[styles.bar, { backgroundColor: theme.bar }]} />
+      <View
+        style={[
+          styles.bar,
+          { backgroundColor: theme.bar },
+        ]}
+      />
 
       <View style={styles.content}>
         <View style={styles.header}>
           <View style={styles.avatar}>
-
             {(!petPhotoUrl || !isImageLoaded) && (
               <View style={styles.placeholder}>
                 <MaterialCommunityIcons
@@ -91,26 +131,34 @@ export default function ReservaCard({ data, onPress }) {
           </View>
 
           <View style={styles.headerText}>
-            <Text 
-              style={styles.petName} 
-              numberOfLines={1} 
+            <Text
+              style={styles.petName}
+              numberOfLines={1}
               ellipsizeMode="tail"
             >
               {petName}
             </Text>
 
-            <Text 
-              style={styles.tutorName} 
-              numberOfLines={1} 
+            <Text
+              style={styles.tutorName}
+              numberOfLines={1}
               ellipsizeMode="tail"
             >
               Tutor: {tutorName}
             </Text>
           </View>
 
-          <View style={[styles.badge, { backgroundColor: theme.bg }]}>
+          <View
+            style={[
+              styles.badge,
+              { backgroundColor: theme.bg },
+            ]}
+          >
             <Text
-              style={[styles.badgeText, { color: theme.text }]}
+              style={[
+                styles.badgeText,
+                { color: theme.text },
+              ]}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -127,6 +175,7 @@ export default function ReservaCard({ data, onPress }) {
 
           <View style={[styles.detail, styles.service]}>
             <Text style={styles.label}>SERVIÇO</Text>
+
             <Text
               style={styles.value}
               numberOfLines={1}
@@ -134,6 +183,18 @@ export default function ReservaCard({ data, onPress }) {
             >
               {data?.title || 'Serviço Geral'}
             </Text>
+
+            <View style={styles.responsible}>
+              <Text style={styles.label}>RESPONSÁVEL</Text>
+
+              <Text
+                style={styles.value}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {responsibleName}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -144,6 +205,7 @@ export default function ReservaCard({ data, onPress }) {
               size={15}
               color="#9CA3AF"
             />
+
             <Text
               style={styles.footerText}
               numberOfLines={1}
@@ -171,25 +233,35 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
   },
+
   cardPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.99 }],
     backgroundColor: '#F9FAFB',
   },
-  bar: { width: 6 },
+
+  bar: {
+    width: 6,
+  },
+
   content: {
     flex: 1,
     padding: 15,
     minWidth: 0,
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,
     minWidth: 0,
   },
+
   avatar: {
     width: 44,
     height: 44,
@@ -200,6 +272,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexShrink: 0,
   },
+
   placeholder: {
     position: 'absolute',
     justifyContent: 'center',
@@ -208,27 +281,32 @@ const styles = StyleSheet.create({
     height: '100%',
     zIndex: 1,
   },
+
   avatarImage: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     zIndex: 2,
   },
+
   headerText: {
     flex: 1,
     marginHorizontal: 10,
-    minWidth: 0, 
+    minWidth: 0,
   },
+
   petName: {
     fontSize: 15,
     fontWeight: '700',
     color: COLORS.text,
   },
+
   tutorName: {
     fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
   },
+
   badge: {
     maxWidth: 110,
     paddingHorizontal: 10,
@@ -238,23 +316,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexShrink: 1,
   },
+
   badgeText: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
+
   details: {
     flexDirection: 'row',
     marginBottom: 15,
     gap: 16,
   },
+
   detail: {
     flexShrink: 1,
   },
+
   service: {
     flex: 1,
     minWidth: 0,
   },
+
+  responsible: {
+    marginTop: 10,
+  },
+
   label: {
     fontSize: 10,
     color: '#9CA3AF',
@@ -262,11 +349,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     letterSpacing: 0.4,
   },
+
   value: {
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.text,
   },
+
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,8 +364,9 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     minWidth: 0,
   },
+
   footerText: {
-    flex: 1, 
+    flex: 1,
     marginLeft: 5,
     fontSize: 12,
     color: '#6B7280',

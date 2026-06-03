@@ -15,11 +15,16 @@ const SERVICE_CATALOG = [
 ];
 
 export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, onSaveSuccess }) {
+  const { userData } = useContext(AuthContext);
+  const userId = userData?._id;
+  const isAdmin = userData?.isAdmin;
   const [pets, setPets] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const [isFetchingPets, setIsFetchingPets] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const { userData } = useContext(AuthContext);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -30,21 +35,40 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
 
   const [form, setForm] = useState({
     pet: null,
+    user: userData,
     date: selectedDate,
     packageType: 'Avulso',
-    services: [], 
+    services: [],
     notes: '',
     userId: userData._id
   });
 
   useEffect(() => {
     if (visible) {
-      const baseDate = selectedDate || new Date().toISOString().split('T')[0];
-      setForm(prev => ({ ...prev, date: baseDate }));
-      setStartTime(new Date(`${baseDate}T09:00:00`));
+      console.log('IS ADMIN:', isAdmin);
+      console.log('USER DATA:', userData);
+
+      const baseDate =
+        selectedDate ||
+        new Date().toISOString().split('T')[0];
+
+      setForm(prev => ({
+        ...prev,
+        date: baseDate,
+        user: userData
+      }));
+
+      setStartTime(
+        new Date(`${baseDate}T09:00:00`)
+      );
+
       fetchPets('');
+
+      if (isAdmin) {
+        fetchUsers();
+      }
     }
-  }, [visible, selectedDate]);
+  }, [visible, selectedDate, userData]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -69,6 +93,22 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       console.error(error);
     } finally {
       setIsFetchingPets(false);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      setIsFetchingUsers(true);
+      
+      const response = await fetch(`${apiUrl}/users`);
+
+      const data = await response.json();
+
+      setUsers(data || []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsFetchingUsers(false);
     }
   };
 
@@ -118,12 +158,19 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
   const handleSave = async () => {
     if (!form.pet) return Alert.alert('Atenção', 'Selecione um Pet.');
     if (form.services.length === 0) return Alert.alert('Atenção', 'Selecione ao menos um serviço.');
+    if (!userId) return Alert.alert('Erro', 'Usuário não identificado.');
 
     const selectedServiceNames = form.services
       .map(id => SERVICE_CATALOG.find(s => s.id === id).name)
       .join(', ');
 
     const payload = {
+      user:
+        (
+          isAdmin
+        )
+          ? form.user?._id
+          : userId,
       pet: form.pet._id,
       title: selectedServiceNames,
       notes: form.notes,
@@ -140,6 +187,10 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
 
     try {
       setIsSaving(true);
+      console.log(
+        'PAYLOAD:',
+        JSON.stringify(payload, null, 2)
+      );
       const response = await fetch(`${apiUrl}/reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -149,12 +200,20 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       if (!response) throw new Error('Falha ao salvar agendamento');
 
       Alert.alert('Sucesso', 'Agendamento criado!');
-      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '', userId: userData._id });
+      setForm({
+        pet: null,
+        user: userData,
+        date: selectedDate,
+        packageType: 'Avulso',
+        services: [],
+        notes: '',
+        userId: userData._id
+      });
       setSearchText('');
       onSaveSuccess();
       onClose();
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao salvar na API.');
+      Alert.alert('Erro', error.message || 'Ocorreu um erro ao salvar na API.');
     } finally {
       setIsSaving(false);
     }
@@ -192,6 +251,63 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
                 pets={pets}
                 apiUrl={apiUrl}
               />
+
+              {(
+                isAdmin
+              ) && (
+              <>
+                <Text style={styles.sectionLabel}>
+                  RESPONSÁVEL
+                </Text>
+
+                <TouchableOpacity
+                  style={styles.inputBox}
+                  onPress={() =>
+                    setShowUserDropdown(
+                      !showUserDropdown
+                    )
+                  }
+                >
+                  <Text style={styles.textBold}>
+                    {form.user?.name ||
+                      'Selecionar responsável'}
+                  </Text>
+
+                  <MaterialCommunityIcons
+                    name="chevron-down"
+                    size={20}
+                    color={COLORS.primary}
+                  />
+                </TouchableOpacity>
+
+                {showUserDropdown && (
+                  <View style={styles.dropdown}>
+                    {isFetchingUsers ? (
+                      <ActivityIndicator />
+                    ) : (
+                      users.map((u) => (
+                        <TouchableOpacity
+                          key={u._id}
+                          style={styles.userItem}
+                          onPress={() => {
+                            setForm({
+                              ...form,
+                              user: u,
+                            });
+
+                            setShowUserDropdown(false);
+                          }}
+                        >
+                          <Text>
+                            {u.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                  </View>
+                )}
+              </>
+              )}
 
               <View style={styles.row}>
                 <View style={styles.halfInput}>
@@ -302,10 +418,11 @@ const styles = StyleSheet.create({
   totalValue: { fontSize: 18, fontWeight: 'bold', color: COLORS.primary },
   saveBtn: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 20, marginBottom: 40 },
   saveBtnText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
-  
   timeSelector: { backgroundColor: '#FAF7FC', borderColor: COLORS.primary, borderWidth: 1, borderRadius: 12, padding: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   timeText: { color: COLORS.primary, fontSize: 15, fontWeight: 'bold' },
   durationAlert: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF4E5', padding: 12, borderRadius: 10, marginTop: 12, gap: 6 },
   durationText: { fontSize: 12, color: '#D97706', fontWeight: 'bold' },
   textBold: { fontWeight: 'bold', color: COLORS.text },
+  dropdown: { marginTop: 8, backgroundColor: '#FFF', borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, overflow: 'hidden' },
+  userItem: { padding: 14, borderBottomWidth: 1, borderBottomColor: '#EEE'},
 });
