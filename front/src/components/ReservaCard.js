@@ -84,7 +84,7 @@ export default function ReservaCard({ data, onPress }) {
                 source={imageSource}
                 style={styles.avatarImage}
                 contentFit="cover"
-                cachePolicy="memory-disk"
+                cachePolicy="none"
                 onLoad={() => setIsImageLoaded(true)}
               />
             )}

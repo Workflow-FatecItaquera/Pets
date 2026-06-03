@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,35 +6,13 @@ import { useNavigation } from '@react-navigation/native';
 import { COLORS, SIZES } from '../styles/theme';
 import Notifications from './Notifications';
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: '1',
-    icon: 'calendar-outline',
-    title: '',
-    text: 'Novo Agendamento: Bento (Banho e Tosa) marcado para amanhã às 09:30.',
-    unread: true,
-  },
-  {
-    id: '2',
-    icon: 'cash-outline',
-    title: 'Lembrete: ',
-    text: 'Pagamento de Mel (Banho Higiênico) está pendente.',
-    unread: true,
-  },
-  {
-    id: '3',
-    icon: 'leaf-outline',
-    title: '',
-    text: 'Observação Atualizada: Verifique as novas preferências estéticas de Maximus.',
-    unread: false,
-  }
-];
+import socket from '../../service/notif-socket';
 
 export default function Header() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [isNotifVisible, setIsNotifVisible] = useState(false);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => n.unread).length;
 
   const handleMarkAllAsRead = () => {
@@ -50,6 +28,49 @@ export default function Header() {
       notif.id === id ? { ...notif, unread: false } : notif
     ));
   };
+
+  function handleTranslate(text){
+    let action = text.split('/')[0].toLowerCase();
+    let entity = text.split('/')[1].toLowerCase();
+    if(action === 'create') {
+      action = 'Criação de';
+    } else if (action === 'update') {
+      action = 'Atualização de';
+    } else if (action === 'toggle') {
+      action = 'Alteração de';
+    }
+
+    if(entity === 'pet') {
+      entity = ' Pet';
+    } else if(entity === 'reservation') {
+      entity = ' Agendamento';
+    }
+
+    return action + entity;
+
+  };
+
+  useEffect(() => {
+      const handleNovoLog = (log) => {
+        console.log('Novo log recebido:', log);
+        setNotifications((prev) => {
+          const notification = {
+            id: prev.length + 1,
+            icon: log.action.split('/')[1] === 'pet' ? 'paw-outline' : 'calendar-outline',
+            title: `${handleTranslate(log.action)}: `,
+            text: log.message,
+            unread: true
+          };
+          return [notification, ...prev];
+        });
+      };
+
+      socket.on("log", handleNovoLog);
+
+      return () => {
+        socket.off("log", handleNovoLog);
+      };
+  }, []);
 
   return (
     <>

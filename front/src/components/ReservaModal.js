@@ -22,7 +22,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
   const [isFetchingPets, setIsFetchingPets] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+  const { userData } = useContext(AuthContext);
   const [searchText, setSearchText] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -37,6 +37,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
     packageType: 'Avulso',
     services: [], 
     notes: '',
+    userId: userData._id
   });
 
   useEffect(() => {
@@ -135,6 +136,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       estimatedDuration: totals.duration, 
       price: totals.price,
       status: 'AGUARDANDO',
+      userId: userData._id,
       recurrence: {
         type: 'Avulso',
         active: false
@@ -149,13 +151,10 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao salvar agendamento');
-      }
+      if (!response) throw new Error('Falha ao salvar agendamento');
 
       Alert.alert('Sucesso', 'Agendamento criado!');
-      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '' });
+      setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '', userId: userData._id });
       setSearchText('');
       onSaveSuccess();
       onClose();

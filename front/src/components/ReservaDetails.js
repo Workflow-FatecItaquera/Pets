@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { COLORS, SIZES } from '../styles/theme';
 import PetForm from '../components/PetForm';
 import PetDropdown from '../components/PetDropdown';
+import { AuthContext } from '../contexts/AuthContext';
 
 const { height } = Dimensions.get('window');
 
@@ -16,7 +17,6 @@ const SERVICE_CATALOG = [
 ];
 
 export default function ReservaDetails({ visible, onClose, reservation, apiUrl, onSaveSuccess }) {
-  if (!reservation) return null;
 
   const [isEditing, setIsEditing] = useState(false);
   const [loadingAction, setLoadingAction] = useState(false);
@@ -30,6 +30,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   const [quickModalVisible, setQuickModalVisible] = useState(false);
 
   const [selectedServices, setSelectedServices] = useState([]);
+  const { userData } = useContext(AuthContext);
 
   const [editForm, setEditForm] = useState({
     pet: null,
@@ -79,6 +80,8 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
   useEffect(() => {
     if (isEditing && showPetDropdown) fetchPets(debouncedSearch);
   }, [debouncedSearch]);
+
+  if (!reservation) return null;
 
   const fetchPets = async (query = '') => {
     try {
@@ -164,7 +167,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
       const response = await fetch(`${apiUrl}/reservations`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO' })
+        body: JSON.stringify({ _id: reservation._id, status: 'CONCLUIDO', userId: userData._id })
       });
 
       if (!response.ok) throw new Error();
@@ -198,6 +201,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
         notes: editForm.notes,
         status: editForm.status,
         startDate: editForm.date.toISOString(),
+        userId: userData._id,
       };
 
       const response = await fetch(`${apiUrl}/reservations`, {
@@ -234,7 +238,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
               const response = await fetch(`${apiUrl}/reservations/active`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: reservation._id })
+                body: JSON.stringify({ _id: reservation._id, userId: userData._id })
               });
               if (!response.ok) throw new Error();
 
@@ -310,7 +314,7 @@ export default function ReservaDetails({ visible, onClose, reservation, apiUrl, 
                             source={{ uri: `${apiUrl}/pets/${reservation.pet._id}/photo` }}
                             style={styles.petImage}
                             transition={150}
-                            cachePolicy="disk"
+                            cachePolicy="none"
                           />
                         )}
                       </View>
@@ -668,7 +672,7 @@ const styles = StyleSheet.create({
 
   petHeroCard: { backgroundColor: COLORS.primary, borderRadius: 20, padding: 20, flexDirection: 'row', alignItems: 'center', marginBottom: 24, shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
   avatarContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', flexShrink: 0 },
-  petImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  petImage: { width: '100%', height: '100%', contentFit: 'cover' },
   petMeta: { flex: 1, marginLeft: 16, marginRight: 8 },
   petNameText: { fontSize: 20, fontWeight: '700', color: '#FFF' },
   tutorNameText: { fontSize: 13, color: '#E2E8F0', marginTop: 2 },

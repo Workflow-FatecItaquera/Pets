@@ -88,7 +88,7 @@ export default function Home() {
 
     const handleRefresh = () => {
         setRefreshing(true);
-        fetchDashboardData(false);
+        fetchDashboardData();
     };
 
     const handleOpenDetails = (reservation) => {
@@ -121,9 +121,7 @@ export default function Home() {
                         {isAdmin ? "Painel administrativo" : "Painel do Cliente"}
                     </Text>
 
-                    <Text style={style.name}>
-                        Olá, {userData?.name || "Usuário"}
-                    </Text>
+                    <Text style={style.name}>Olá, {userData.isAdmin ? 'Administrador' : 'Colaborador'}</Text>
 
                     <Text style={style.text}>
                         Bem-vindo ao centro de comando da Pêlos & Lambeijos.

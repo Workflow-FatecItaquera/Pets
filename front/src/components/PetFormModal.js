@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Image, View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { COLORS, SIZES } from '../styles/theme';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
+import { AuthContext } from '../contexts/AuthContext';
 
 export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }) {
   const [isSaving, setIsSaving] = useState(false);
-  
+  const { userData } = useContext(AuthContext);
   const [form, setForm] = useState({
     petName: '', type: 'Cachorro', breed: '', size: 'M',
     tutorName: '', phone: '',
     temperament: 'Dócil',
-    allergies: '', notes: '', photo: null
+    allergies: '', notes: '', photo: null, userId: userData ? userData._id : null
   });
 
   const pickImage = async () => {
@@ -50,7 +51,7 @@ export default function PetFormModal({ visible, onClose, apiUrl, onSaveSuccess }
       
       Alert.alert('Sucesso', 'Pet e Tutor cadastrados com sucesso!');
       
-      setForm({ petName: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '', photo: null });
+      setForm({ petName: '', type: 'Cachorro', breed: '', size: 'M', tutorName: '', phone: '', temperament: 'Dócil', allergies: '', notes: '', photo: null, userId: userData ? userData._id : null });
       onSaveSuccess();
       onClose();
     } catch (error) {
