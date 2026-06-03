@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { COLORS } from '../../styles/theme';
 import style from './style';
 import { BACKEND_URI } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const API_URL = BACKEND_URI;
 
@@ -29,6 +30,10 @@ const getLocalDateString = (date = new Date()) => {
 };
 
 export default function Agenda() {
+  const { userData } = useContext(AuthContext);
+  const userId = userData?._id;
+  const isAdmin = userData?.role === 'admin';
+
   const [selectedDate, setSelectedDate] = useState(getLocalDateString());
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -42,7 +47,7 @@ export default function Agenda() {
   const fetchReservations = async () => {
     try {
       setLoading(true);
-      const urlCompleta = `${API_URL}/reservations`;
+      const urlCompleta = `${API_URL}/reservations?userId=${userId}&isAdmin=${isAdmin}`;
       const response = await fetch(urlCompleta);
 
       if (!response.ok) {
@@ -62,7 +67,7 @@ export default function Agenda() {
     React.useCallback(() => {
       generateWeekDays(new Date());
       fetchReservations();
-    }, [])
+    }, [userId, isAdmin])
   );
 
   const generateWeekDays = (baseDate) => {

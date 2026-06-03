@@ -3,12 +3,15 @@ const Database = require("../models/Database");
 
 class ReservationController {
 
-    static async findAll() {
+    static async findAll(userId, isAdmin) {
         await Database.getConnection();
 
-        return Reservation.find({
-            active: true
-        })
+        const query = { active: true };
+        if (!isAdmin) {
+            query.user = userId;
+        }
+
+        return Reservation.find(query)
         .populate({
             path: "pet",
             populate: {
@@ -19,6 +22,29 @@ class ReservationController {
 
     static async insertOne(data) {
         await Database.getConnection();
+
+        if (!data.user) {
+            throw new Error("Usuário responsável não definido.");
+        }
+
+        const startNew = new Date(data.startDate);
+        const endNew = new Date(startNew.getTime() + data.estimatedDuration * 60000);
+
+        const conflict = await Reservation.findOne({
+            user: data.user,
+            active: true,
+            startDate: { $lt: endNew },
+            $expr: {
+                $gt: [
+                    { $add: ["$startDate", { $multiply: ["$estimatedDuration", 60000] }] },
+                    startNew
+                ]
+            }
+        });
+
+        if (conflict) {
+            throw new Error("Você já possui um agendamento neste mesmo horário.");
+        }
 
         const reservation = new Reservation({
             ...data,

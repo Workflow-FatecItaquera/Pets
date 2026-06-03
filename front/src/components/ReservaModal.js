@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, ScrollView, StyleSheet, Dimensions, ActivityIndicator, Alert, Platform } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS, SIZES } from '../styles/theme';
 import PetForm from '../components/PetForm';
 import PetDropdown from '../components/PetDropdown';
+import { AuthContext } from '../contexts/AuthContext';
 
 const { height } = Dimensions.get('window');
 
@@ -14,6 +15,9 @@ const SERVICE_CATALOG = [
 ];
 
 export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, onSaveSuccess }) {
+  const { userData } = useContext(AuthContext);
+  const userId = userData?._id;
+
   const [pets, setPets] = useState([]);
   const [isFetchingPets, setIsFetchingPets] = useState(false);
   const [showPetDropdown, setShowPetDropdown] = useState(false);
@@ -116,12 +120,14 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
   const handleSave = async () => {
     if (!form.pet) return Alert.alert('Atenção', 'Selecione um Pet.');
     if (form.services.length === 0) return Alert.alert('Atenção', 'Selecione ao menos um serviço.');
+    if (!userId) return Alert.alert('Erro', 'Usuário não identificado.');
 
     const selectedServiceNames = form.services
       .map(id => SERVICE_CATALOG.find(s => s.id === id).name)
       .join(', ');
 
     const payload = {
+      user: userId,
       pet: form.pet._id,
       title: selectedServiceNames,
       notes: form.notes,
@@ -143,7 +149,10 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error('Falha ao salvar agendamento');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao salvar agendamento');
+      }
 
       Alert.alert('Sucesso', 'Agendamento criado!');
       setForm({ pet: null, date: selectedDate, packageType: 'Avulso', services: [], notes: '' });
@@ -151,7 +160,7 @@ export default function ReservaModal({ visible, onClose, selectedDate, apiUrl, o
       onSaveSuccess();
       onClose();
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao salvar na API.');
+      Alert.alert('Erro', error.message || 'Ocorreu um erro ao salvar na API.');
     } finally {
       setIsSaving(false);
     }
@@ -299,7 +308,6 @@ const styles = StyleSheet.create({
   totalValue: { fontSize: 18, fontWeight: 'bold', color: COLORS.primary },
   saveBtn: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 20, marginBottom: 40 },
   saveBtnText: { color: COLORS.white, fontSize: 16, fontWeight: 'bold' },
-  
   timeSelector: { backgroundColor: '#FAF7FC', borderColor: COLORS.primary, borderWidth: 1, borderRadius: 12, padding: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   timeText: { color: COLORS.primary, fontSize: 15, fontWeight: 'bold' },
   durationAlert: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF4E5', padding: 12, borderRadius: 10, marginTop: 12, gap: 6 },

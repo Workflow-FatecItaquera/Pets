@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { View, Text, Pressable, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import style from './style';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import ReservaCard from '../../components/ReservaCard';
 import ReservaDetails from '../../components/ReservaDetails';
 import { COLORS } from '../../styles/theme';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const API_URL = BACKEND_URI;
 
@@ -20,6 +21,9 @@ const getLocalDateString = (date = new Date()) => {
 
 export default function Home() {
     const navigation = useNavigation();
+    const { userData } = useContext(AuthContext);
+    const userId = userData?._id;
+    const isAdmin = userData?.role === 'admin';
     
     const [todayAppointments, setTodayAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,7 +42,7 @@ export default function Home() {
     const fetchDashboardData = useCallback(async (showLoader = true) => {
         if (showLoader) setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/reservations`);
+            const response = await fetch(`${API_URL}/reservations?userId=${userId}&isAdmin=${isAdmin}`);
             if (!response.ok) throw new Error('Erro ao buscar reservas');
             
             const data = await response.json();
@@ -76,7 +80,7 @@ export default function Home() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [userId, isAdmin]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -113,9 +117,13 @@ export default function Home() {
                 >
                     <View style={style.yellowGlow} />
 
-                    <Text style={style.type}>Painel administrativo</Text>
+                    <Text style={style.type}>
+                        {isAdmin ? "Painel administrativo" : "Painel do Cliente"}
+                    </Text>
 
-                    <Text style={style.name}>Olá, Administrador</Text>
+                    <Text style={style.name}>
+                        Olá, {userData?.name || "Usuário"}
+                    </Text>
 
                     <Text style={style.text}>
                         Bem-vindo ao centro de comando da Pêlos & Lambeijos.
