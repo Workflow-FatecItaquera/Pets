@@ -3,12 +3,15 @@ import Database from "../models/Database.js";
 
 class ReservationController {
 
-    static async findAll() {
+    static async findAll(userId, isAdmin) {
         await Database.getConnection();
 
-        return Reservation.find({
-            active: true
-        })
+        const query = { active: true };
+        if (!isAdmin) {
+            query.user = userId;
+        }
+
+        return Reservation.find(query)
         .populate({
             path: "pet",
             populate: {
