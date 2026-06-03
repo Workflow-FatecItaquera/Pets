@@ -115,9 +115,10 @@ app.post("/users/login", async (req, res) => {
 });
 
 app.put("/users", async (req, res) => {
+    const userId = req.body._id;
     try {
         const user = await UserController.update(req.body);
-        const log = await LogController.create(req.body.userId, "update/user", `Usuário ${user.name} atualizado`);
+        const log = await LogController.create(userId, "update/user", `Usuário ${user.name} atualizado`);
 
         res.json(user);
     } catch (err) {
