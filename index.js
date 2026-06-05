@@ -46,7 +46,7 @@ mongoose.connect(process.env.MONGODB_URI,{
     console.log("Conectado ao MongoDB Atlas");
 
     const client = mongoose.connection.getClient();
-    const db = client.db("pets"); 
+    const db = client.db("db_PelosLambeijos");
     bucket = new GridFSBucket(db, { bucketName: "photos" });
     console.log("GridFSBucket inicializado");
 
