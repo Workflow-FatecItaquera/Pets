@@ -19,6 +19,9 @@
   },
   "private": true,
   "devDependencies": {
-    "babel-preset-expo": "~54.0.10"
+    "babel-preset-expo": "~54.0.10",
+    "esbuild": "^0.28.0",
+    "esbuild-jest": "^0.5.0",
+    "jest": "^30.4.2"
   }
 }
