@@ -69,16 +69,6 @@ class TutorController {
             throw err;
         }
     }
-
-    static async clearAll() {
-        try {
-            await Tutor.deleteMany({}); 
-            return "Limpeza concluída";
-        } catch (error) {
-            console.error(error);
-            throw new Error("Houve um erro na limpeza");
-        }
-    }
 }
 
 export default TutorController;

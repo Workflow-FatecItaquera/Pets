@@ -23,16 +23,6 @@ class LogController {
         const log = new Log({ user: userId, action, message });
         return await log.save();
     }
-
-    static async clearAll(){
-        try {
-            Log.deleteMany({});
-            return "Limpeza concluída";
-        } catch (error) {
-            return "Houve um erro";
-        }
-    }
-
 }
 
 export default LogController;
