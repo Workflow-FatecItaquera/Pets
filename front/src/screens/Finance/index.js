@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useContext } from 'react';
 import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BACKEND_URI } from '@env';
 import { useFocusEffect } from '@react-navigation/native';
+import { AuthContext } from '../../contexts/AuthContext';
 
 import { COLORS } from '../../styles/theme';
 import style from './style';
@@ -123,13 +124,17 @@ export default function Finance() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('monthly');
+  const { userData } = useContext(AuthContext);
+  const userId = userData?._id;
+  const isAdmin = userData?.isAdmin;
 
   const fetchReservations = useCallback(async (showLoader = true) => {
     try {
       if (showLoader) setLoading(true);
 
       console.log(`[Finance] Buscando agendamentos reais em: ${API_URL}/reservations`);
-      const response = await fetch(`${API_URL}/reservations`);
+      const urlCompleta = `${API_URL}/reservations?userId=${userId}&isAdmin=${isAdmin}`;
+      const response = await fetch(urlCompleta);
       
       if (!response.ok) {
         throw new Error(`Erro do servidor: Status ${response.status}`);
